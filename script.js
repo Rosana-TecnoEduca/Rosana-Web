@@ -867,14 +867,7 @@ function initURLContactParams() {
     }
   }
 
-  const form = document.getElementById('mainContactForm');
-  if (form) {
-    setTimeout(() => {
-      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const nameInput = document.getElementById('contactName');
-      if (nameInput) nameInput.focus();
-    }, 280);
-  }
+  // No forzamos auto-scroll hacia el formulario para que la página comience siempre desde arriba
 }
 
 function applySettingsToUI() {
@@ -1231,10 +1224,15 @@ function renderBlogPosts(categoryFilter = 'all', targetContainerId = 'blogPostsC
   }
 
   if (filtered.length === 0) {
+    const emptyMessage = allArticles.length === 0
+      ? 'Todavía no hay artículos cargados.'
+      : 'No encontramos publicaciones con ese filtro o búsqueda. Probá con otra categoría o restablecé los filtros.';
     container.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background:#FFFFFF; border-radius:18px; border:1px dashed #D8C4EE;">
-        <p style="font-size:1.1rem; color:var(--text-muted); margin-bottom:1rem;">No hay artículos en esta categoría aún.</p>
-        <button class="btn btn-primary btn-sm" onclick="renderBlogPosts('all')">Ver todos los artículos</button>
+      <div class="empty-resources-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: var(--color-bg-soft); border-radius: 16px; border: 2px dashed var(--primary-purple-border);">
+        <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🔍</span>
+        <h3 style="font-size: 1.4rem; color: var(--primary-purple-dark); margin-bottom: 0.5rem;">${allArticles.length === 0 ? 'Próximamente' : 'No se encontraron artículos'}</h3>
+        <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem;">${emptyMessage}</p>
+        ${allArticles.length > 0 ? '<button class="btn btn-primary" onclick="renderBlogPosts(\'all\')">Mostrar todos los artículos</button>' : ''}
       </div>
     `;
     return;
@@ -1446,10 +1444,15 @@ function initBlogFilters() {
       }
 
       if (filtered.length === 0) {
+        const emptyMessage = articles.length === 0
+          ? 'Todavía no hay artículos cargados.'
+          : 'No encontramos publicaciones con ese filtro o búsqueda. Probá con otra categoría o restablecé los filtros.';
         container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background:#FFFFFF; border-radius:18px; border:1px dashed #D8C4EE;">
-            <p style="font-size:1.1rem; color:var(--text-muted); margin-bottom:1rem;">No se encontraron artículos con ese criterio.</p>
-            <button class="btn btn-primary btn-sm" onclick="renderBlogPosts('all')">Restablecer artículos</button>
+          <div class="empty-resources-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: var(--color-bg-soft); border-radius: 16px; border: 2px dashed var(--primary-purple-border);">
+            <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🔍</span>
+            <h3 style="font-size: 1.4rem; color: var(--primary-purple-dark); margin-bottom: 0.5rem;">${articles.length === 0 ? 'Próximamente' : 'No se encontraron artículos'}</h3>
+            <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem;">${emptyMessage}</p>
+            ${articles.length > 0 ? '<button class="btn btn-primary" onclick="renderBlogPosts(\'all\')">Mostrar todos los artículos</button>' : ''}
           </div>
         `;
         return;
