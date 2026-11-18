@@ -22,26 +22,13 @@
 </head>
 <body class="page-recursos">
 
-  <!-- ================= Barra de Aviso Superior ================= -->
-  <div class="top-announcement">
-    <div class="container announcement-inner">
-      <span>💻 <strong>Diseño y Desarrollo de Sitios Web</strong> a medida &bull; Clases Particulares en Luján y Online.</span>
-      <div class="announcement-actions">
-        <a href="contacto.html" class="announcement-link">
-          ✉️ Formulario de Contacto
-        </a>
-      </div>
-    </div>
-  </div>
-
   <!-- ================= Header / Navegación ================= -->
   <header class="site-header" id="header">
   <script>window.toggleMobileNav=function(e){if(e){e.preventDefault();e.stopPropagation();}var m=document.getElementById("navMenu"),b=document.getElementById("menuToggle"),d=document.getElementById("navBackdrop");if(m){var o=m.classList.toggle("open");if(b)b.classList.toggle("active",o);if(d)d.classList.toggle("open",o);document.body.classList.toggle("mobile-menu-active",o);}};window.closeMobileNav=function(){var m=document.getElementById("navMenu"),b=document.getElementById("menuToggle"),d=document.getElementById("navBackdrop");if(m)m.classList.remove("open");if(b)b.classList.remove("active");if(d)d.classList.remove("open");document.body.classList.remove("mobile-menu-active");};window.toggleRosanaChat=function(e){if(e){if(e.preventDefault)e.preventDefault();if(e.stopPropagation)e.stopPropagation();}var w=document.getElementById("rosanaChatWidget");if(w)w.classList.toggle("open");};window.closeRosanaChat=function(){var w=document.getElementById("rosanaChatWidget");if(w)w.classList.remove("open");};window.selectChatTopic=function(btn,topic){window.selectedChatTopic=topic;var bs=document.querySelectorAll(".rcw-option-btn");for(var i=0;i<bs.length;i++)bs[i].classList.remove("active");if(btn)btn.classList.add("active");};window.submitRosanaChat=function(){var nameEl=document.getElementById("rcwInputName");var msgEl=document.getElementById("rcwInputMsg");var name=nameEl?nameEl.value.trim():"";var msg=msgEl?msgEl.value.trim():"";if(!msg){alert("Por favor escribí brevemente tu duda o consulta.");if(msgEl)msgEl.focus();return;}var topic=window.selectedChatTopic||"Clases Particulares";var text="¡Hola Rosana! Te contacto desde el chat de tu web por una consulta sobre *"+topic+"*."+(name?" Mi nombre es *"+name+"*.":"")+"\n\n"+msg;var waUrl="https://wa.me/5492323523149?text="+encodeURIComponent(text);var w=null;try{w=window.open(waUrl,"_blank");}catch(e){}if(!w||w.closed||typeof w.closed==="undefined"){window.location.href=waUrl;}var rec=document.getElementById("rcwReceiptMessage");var recT=document.getElementById("rcwReceiptText");var form=document.getElementById("rcwFormCard");if(recT){recT.textContent=(name?"¡Gracias "+name+"! ":"")+"Tu consulta sobre \""+topic+"\" fue enviada a mi WhatsApp. Te responderé a la brevedad. ¡Que tengas un excelente día! ♡";}if(rec){rec.style.display="flex";rec.classList.add("visible");}if(form){form.style.display="none";}var body=document.getElementById("rcwBody");if(body){setTimeout(function(){body.scrollTop=body.scrollHeight;},100);}};</script>
     <div class="container nav-container">
-            <a href="index.html" class="brand-logo">
+      <a href="index.html" class="brand-logo">
         <span class="logo-name">Rosana <span class="heart-accent">♡</span></span>
-        <span class="logo-sub">Clases Particulares &bull; Diseño Web &bull; TecnoEduca</span>
-        <span class="logo-sub-tag">Estudiante de Analista Universitario en Ciencias de Datos (UNLu)</span>
+        <span class="logo-sub">TecnoEduca • Clases Particulares &amp; Diseño Web</span>
       </a>
 
       <nav class="nav-menu" id="navMenu">
@@ -51,18 +38,13 @@
         </div>
         <ul class="nav-list">
           <li><a href="index.html" class="nav-link">Inicio</a></li>
-          <li><a href="sobre-mi.html" class="nav-link">Sobre Mí</a></li>
           <li><a href="materias.html" class="nav-link">Materias</a></li>
           <li><a href="diseno-web.html" class="nav-link">Diseño Web</a></li>
+          <li><a href="sobre-mi.html" class="nav-link">Sobre Mí</a></li>
           <li><a href="blog.html" class="nav-link">Blog</a></li>
           <li><a href="recursos.html" class="nav-link active">Recursos</a></li>
-          <li><a href="contacto.html" class="nav-link">Contacto</a></li>
+          <li class="nav-item-cta"><a href="contacto.html" class="nav-link nav-btn btn btn-primary btn-sm">Contacto</a></li>
         </ul>
-        <div class="nav-cta-mobile">
-          <a href="contacto.html" class="btn btn-primary btn-sm">
-            Enviar Mensaje
-          </a>
-        </div>
       </nav>
       <div class="nav-backdrop" id="navBackdrop" onclick="window.closeMobileNav()"></div>
 

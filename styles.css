@@ -419,6 +419,45 @@ button, select, input, textarea, .btn, a.btn, .filter-btn, .btn-subject-action, 
   width: 100%;
 }
 
+/* Botón Contacto destacado en el menú de navegación */
+.site-header .nav-btn,
+.site-header .nav-link.btn-primary {
+  background: linear-gradient(135deg, #205A65 0%, #276E7B 100%) !important;
+  color: #FFFFFF !important;
+  padding: 0.45rem 1.15rem !important;
+  border-radius: var(--radius-full) !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  box-shadow: 0 4px 14px rgba(39, 110, 123, 0.35) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 0.35rem;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+}
+
+.site-header .nav-btn:hover,
+.site-header .nav-link.btn-primary:hover {
+  background: linear-gradient(135deg, #17454E 0%, #1F545F 100%) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(39, 110, 123, 0.45) !important;
+}
+
+.site-header .nav-btn::after,
+.site-header .nav-link.btn-primary::after {
+  display: none !important;
+}
+
+.site-header .nav-btn.active,
+.site-header .nav-link.btn-primary.active {
+  background: linear-gradient(135deg, #17454E 0%, #1F545F 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 2px #FFE69A, 0 6px 18px rgba(39, 110, 123, 0.45) !important;
+}
+
 .menu-toggle {
   display: none;
 }
@@ -5720,6 +5759,18 @@ body.mobile-menu-active .floating-social-sidebar {
 
   .site-header .nav-link::after {
     display: none !important;
+  }
+
+  .site-header .nav-btn,
+  .site-header .nav-link.btn-primary {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+    margin-left: 0 !important;
+    margin-top: 0.45rem !important;
+    padding: 0.55rem 0.8rem !important;
+    border-radius: 8px !important;
+    font-size: 0.92rem !important;
   }
 
   .nav-cta-mobile {
