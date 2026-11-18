@@ -10,9 +10,165 @@
  */
 
 // ===================================================================
+// CONTROLADOR GLOBAL DEL MENÚ MÓVIL / SANDWICH LATERAL (DELICADO)
+// ===================================================================
+window.toggleMobileNav = function(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+  const navMenu = document.getElementById('navMenu');
+  const menuToggle = document.getElementById('menuToggle');
+  const navBackdrop = document.getElementById('navBackdrop');
+  if (!navMenu) return;
+
+  const isOpen = navMenu.classList.toggle('open');
+  if (menuToggle) {
+    menuToggle.classList.toggle('active', isOpen);
+    menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+  if (navBackdrop) {
+    navBackdrop.classList.toggle('open', isOpen);
+  }
+  document.body.classList.toggle('mobile-menu-active', isOpen);
+};
+
+window.closeMobileNav = function() {
+  const navMenu = document.getElementById('navMenu');
+  const menuToggle = document.getElementById('menuToggle');
+  const navBackdrop = document.getElementById('navBackdrop');
+  if (navMenu) navMenu.classList.remove('open');
+  if (menuToggle) {
+    menuToggle.classList.remove('active');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  }
+  if (navBackdrop) {
+    navBackdrop.classList.remove('open');
+  }
+  document.body.classList.remove('mobile-menu-active');
+};
+
+// ===================================================================
+// ASISTENTE DE CHAT FLOTANTE CON ROSANA (DESPLEGABLE TIPO CHAT)
+// ===================================================================
+let selectedChatTopic = 'Clases Particulares';
+
+window.toggleRosanaChat = function(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+  const widget = document.getElementById('rosanaChatWidget');
+  if (widget) {
+    widget.classList.toggle('open');
+  }
+};
+
+window.closeRosanaChat = function() {
+  const widget = document.getElementById('rosanaChatWidget');
+  if (widget) widget.classList.remove('open');
+};
+
+window.selectChatTopic = function(btn, topic) {
+  selectedChatTopic = topic;
+  window.selectedChatTopic = topic;
+  document.querySelectorAll('.rcw-option-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+};
+
+window.submitRosanaChat = async function() {
+  const nameInput = document.getElementById('rcwInputName');
+  const msgInput = document.getElementById('rcwInputMsg');
+  const name = nameInput ? nameInput.value.trim() : '';
+  const message = msgInput ? msgInput.value.trim() : '';
+
+  if (!message) {
+    alert('Por favor escribí brevemente tu duda o consulta.');
+    if (msgInput) msgInput.focus();
+    return;
+  }
+
+  const currentTopic = window.selectedChatTopic || (typeof selectedChatTopic !== 'undefined' ? selectedChatTopic : 'Clases Particulares');
+
+  // 1. Armar mensaje estructurado para WhatsApp
+  const settings = typeof getStoredSettings === 'function' ? getStoredSettings() : {};
+  let waText = '¡Hola Rosana! Te contacto desde el chat de tu web por una consulta sobre *' + currentTopic + '*.';
+  if (name) waText += ' Mi nombre es *' + name + '*.';
+  waText += '\n\n' + message;
+
+  const cleanPhone = (settings && settings.phoneClean) ? settings.phoneClean : '5492323523149';
+  const waUrl = 'https://wa.me/' + cleanPhone + '?text=' + encodeURIComponent(waText);
+
+  // Abrir WhatsApp directo con alternativa si el navegador bloquea ventanas emergentes
+  let waWin = null;
+  try {
+    waWin = window.open(waUrl, '_blank');
+  } catch (e) {
+    waWin = null;
+  }
+  if (!waWin || waWin.closed || typeof waWin.closed === 'undefined') {
+    window.location.href = waUrl;
+  }
+
+  // 2. Guardar en bandeja de mensajes web y Supabase por seguridad
+  const newInquiry = {
+    id: 'msg-' + Date.now(),
+    name: name || 'Consultante Chat Web',
+    email: 'Sin correo (Consulta Chat)',
+    phone: '',
+    subject: 'Consulta Chat: ' + currentTopic,
+    message: message,
+    date: new Date().toLocaleString('es-AR'),
+    read: false
+  };
+
+  try {
+    if (!window.supabaseDB || typeof window.supabaseDB.insertMessage !== 'function') {
+      throw new Error('El servicio de mensajes no está disponible.');
+    }
+    await window.supabaseDB.insertMessage(newInquiry);
+  } catch (err) {
+    console.error('No se pudo registrar la consulta del chat en Supabase:', err);
+    alert('La consulta se abrió en WhatsApp, pero no se pudo guardar en la bandeja del sitio. Por favor, enviá el formulario de contacto para que también llegue al panel.');
+  }
+
+  // 3. Mostrar el mensaje de recepción de Rosana en el chat y ocultar formulario
+  const receiptEl = document.getElementById('rcwReceiptMessage');
+  const receiptText = document.getElementById('rcwReceiptText');
+  const formCard = document.getElementById('rcwFormCard');
+
+  if (receiptText) {
+    receiptText.textContent = name 
+      ? '¡Gracias ' + name + '! Tu consulta sobre "' + currentTopic + '" fue enviada a mi WhatsApp. Te responderé a la brevedad. ¡Que tengas un excelente día! ♡'
+      : '¡Tu consulta sobre "' + currentTopic + '" fue enviada a mi WhatsApp! Te responderé a la brevedad. ¡Que tengas un excelente día! ♡';
+  }
+
+  if (receiptEl) {
+    receiptEl.style.display = 'flex';
+    receiptEl.classList.add('visible');
+  }
+
+  if (formCard) {
+    formCard.style.display = 'none';
+  }
+
+  const bodyEl = document.getElementById('rcwBody');
+  if (bodyEl) {
+    setTimeout(() => {
+      bodyEl.scrollTop = bodyEl.scrollHeight;
+    }, 100);
+  }
+};
+
+window.openConciergeModal = window.toggleRosanaChat;
+window.closeConciergeModal = window.closeRosanaChat;
+window.initConciergeSystem = function() {};
+window.sendChatViaWhatsApp = window.submitRosanaChat;
+window.sendChatToPanel = window.submitRosanaChat;
+
+// ===================================================================
 // DATOS INICIALES POR DEFECTO (Se guardan en localStorage)
 // ===================================================================
-
 const DEFAULT_ARTICLES = [
   {
     id: 'post-1',
@@ -427,8 +583,8 @@ const DEFAULT_RESOURCES = [
 
 const DEFAULT_SETTINGS = {
   email: 'tecnoeduca81@gmail.com',
-  whatsapp: '',
-  phoneClean: '',
+  whatsapp: '+54 9 2323 52-3149',
+  phoneClean: '5492323523149',
   linkedin: 'https://www.linkedin.com/in/rosana-mar%C3%ADa-luj%C3%A1n-zunino-b21224a4',
   github: 'https://github.com/marialujanzunino',
   cvUrl: '',
@@ -436,16 +592,17 @@ const DEFAULT_SETTINGS = {
   cvFileData: '',
   cvFileName: '',
   cvFileType: '',
-  youtube: 'https://www.youtube.com/@tecnoeduca',
-  facebook: 'https://www.facebook.com/tecnoeduca',
-  instagram: 'https://www.instagram.com/tecnoeduca',
-  instagramPersonal: '',
-  tiktok: 'https://www.tiktok.com/@tecnoeduca',
+  youtube: 'https://www.youtube.com/@TecnoEduca.Oficial',
+  facebook: 'https://web.facebook.com/tecnoeduca81/',
+  facebookPersonal: 'https://web.facebook.com/rosanamlzunino/',
+  instagram: 'https://www.instagram.com/tecnoeduca.oficial',
+  instagramPersonal: 'https://www.instagram.com/rosana.zunino',
+  tiktok: 'https://www.tiktok.com/@tecnoeduca81',
   telegram: 'https://t.me/tecnoeduca',
-  discord: 'https://discord.gg/tecnoeduca',
-  threads: 'https://www.threads.net/@tecnoeduca',
-  substack: 'https://substack.com',
-  adminPass: 'tecnoeduca2026'
+  discord: 'https://discord.gg/WBAU2sXrfE',
+  threads: 'https://www.threads.net/@tecnoeduca.oficial',
+  threadsPersonal: 'https://www.threads.net/@rosana.zunino',
+  substack: 'https://rosylujan.substack.com/',
 };
 
 // Variables globales de estado
@@ -458,21 +615,14 @@ let currentResourceCategory = 'all';
 function getStoredArticles() {
   const data = localStorage.getItem('tecnoeduca_articles');
   let list = [];
-  if (!data) {
-    list = DEFAULT_ARTICLES;
-    localStorage.setItem('tecnoeduca_articles', JSON.stringify(DEFAULT_ARTICLES));
-  } else {
+  if (data !== null) {
     try {
       list = JSON.parse(data);
     } catch (e) {
-      list = DEFAULT_ARTICLES;
+      list = [];
     }
-  }
-
-  // Si la lista no tiene el artículo programado de demostración, incluirlo
-  if (!list.some(a => a.id === 'post-scheduled-1')) {
-    const sch = DEFAULT_ARTICLES.find(a => a.id === 'post-scheduled-1');
-    if (sch) list.push(sch);
+  } else {
+    localStorage.setItem('tecnoeduca_articles', '[]');
   }
 
   // Normalizar atributos y verificar si algún post programado ya llegó a su fecha y hora
@@ -505,22 +655,13 @@ window.saveBlogPosts = saveArticles;
 
 function getStoredBooks() {
   const data = localStorage.getItem('tecnoeduca_books');
-  if (!data) {
-    localStorage.setItem('tecnoeduca_books', JSON.stringify(DEFAULT_BOOKS));
-    return DEFAULT_BOOKS;
-  }
   try {
-    const list = JSON.parse(data);
-    const hasDatos = list.some(b => b.category && b.category.toLowerCase().includes('datos'));
-    if (!hasDatos) {
-      const newItems = DEFAULT_BOOKS.filter(d => !list.some(b => b.id === d.id));
-      const merged = [...list, ...newItems];
-      localStorage.setItem('tecnoeduca_books', JSON.stringify(merged));
-      return merged;
-    }
+    const list = data ? JSON.parse(data) : [];
+    localStorage.setItem('tecnoeduca_books', JSON.stringify(list));
     return list;
   } catch (e) {
-    return DEFAULT_BOOKS;
+    localStorage.setItem('tecnoeduca_books', '[]');
+    return [];
   }
 }
 
@@ -530,28 +671,17 @@ function saveBooks(books) {
 
 function getStoredResources() {
   const data = localStorage.getItem('tecnoeduca_resources');
-  if (!data) {
-    localStorage.setItem('tecnoeduca_resources', JSON.stringify(DEFAULT_RESOURCES));
-    return DEFAULT_RESOURCES;
+  if (data !== null) {
+    try {
+      let list = JSON.parse(data);
+      list = list.filter(r => r.category !== 'navidad' && (!r.title || !r.title.toLowerCase().includes('navid')));
+      return list;
+    } catch (e) {
+      return [];
+    }
   }
-  try {
-    let list = JSON.parse(data);
-    // Limpiar ítems navideños temporales que se cargaron previamente
-    list = list.filter(r => r.category !== 'navidad' && (!r.title || !r.title.toLowerCase().includes('navid')));
-    // Asegurar que las aplicaciones interactivas y recursos de imágenes estén presentes
-    DEFAULT_RESOURCES.forEach(defRes => {
-      const idx = list.findIndex(r => r.id === defRes.id);
-      if (idx === -1) {
-        list.unshift(defRes);
-      } else if (defRes.category === 'interactivas') {
-        list[idx] = defRes;
-      }
-    });
-    localStorage.setItem('tecnoeduca_resources', JSON.stringify(list));
-    return list;
-  } catch (e) {
-    return DEFAULT_RESOURCES;
-  }
+  localStorage.setItem('tecnoeduca_resources', '[]');
+  return [];
 }
 
 function saveResources(resources) {
@@ -575,6 +705,7 @@ function getStoredSettings() {
   }
   try {
     const parsed = JSON.parse(data);
+    delete parsed.adminPass;
     // Migrar configuraciones si tienen datos anteriores
     if (parsed.email === 'contacto.tecnoeduca@gmail.com' || parsed.email === 'zunino.resanaml@gmail.com') {
       parsed.email = 'tecnoeduca81@gmail.com';
@@ -585,19 +716,55 @@ function getStoredSettings() {
     if (parsed.github === 'https://github.com/rosanazunino') {
       parsed.github = 'https://github.com/marialujanzunino';
     }
-    if (!parsed.instagram) parsed.instagram = 'https://www.instagram.com/tecnoeduca';
-    if (!parsed.tiktok) parsed.tiktok = 'https://www.tiktok.com/@tecnoeduca';
-    if (!parsed.threads) parsed.threads = 'https://www.threads.net/@tecnoeduca';
-    if (!parsed.substack) parsed.substack = 'https://substack.com';
-    if (!parsed.youtube) parsed.youtube = 'https://www.youtube.com/@tecnoeduca';
+    if (parsed.youtube === 'https://www.youtube.com/@tecnoeduca') {
+      parsed.youtube = DEFAULT_SETTINGS.youtube;
+    }
+    if (parsed.facebook === 'https://www.facebook.com/tecnoeduca') {
+      parsed.facebook = DEFAULT_SETTINGS.facebook;
+    }
+    if (parsed.instagram === 'https://www.instagram.com/tecnoeduca') {
+      parsed.instagram = DEFAULT_SETTINGS.instagram;
+    }
+    if (parsed.instagramPersonal === 'https://www.instagram.com/rosanazunino') {
+      parsed.instagramPersonal = DEFAULT_SETTINGS.instagramPersonal;
+    }
+    if (parsed.tiktok === 'https://www.tiktok.com/@tecnoeduca') {
+      parsed.tiktok = DEFAULT_SETTINGS.tiktok;
+    }
+    if (parsed.discord === 'https://discord.gg/tecnoeduca') {
+      parsed.discord = DEFAULT_SETTINGS.discord;
+    }
+    if (parsed.threads === 'https://www.threads.net/@tecnoeduca') {
+      parsed.threads = DEFAULT_SETTINGS.threads;
+    }
+    if (parsed.substack === 'https://substack.com') {
+      parsed.substack = DEFAULT_SETTINGS.substack;
+    }
+    if (parsed.phoneClean === '5491131327776') {
+      parsed.phoneClean = DEFAULT_SETTINGS.phoneClean;
+    }
+    if (parsed.whatsapp === '+54 9 11 3132-7776') {
+      parsed.whatsapp = DEFAULT_SETTINGS.whatsapp;
+    }
+    if (!parsed.instagram) parsed.instagram = DEFAULT_SETTINGS.instagram;
+    if (!parsed.instagramPersonal) parsed.instagramPersonal = DEFAULT_SETTINGS.instagramPersonal;
+    if (!parsed.facebook) parsed.facebook = DEFAULT_SETTINGS.facebook;
+    if (!parsed.facebookPersonal) parsed.facebookPersonal = DEFAULT_SETTINGS.facebookPersonal;
+    if (!parsed.tiktok) parsed.tiktok = DEFAULT_SETTINGS.tiktok;
+    if (!parsed.threads) parsed.threads = DEFAULT_SETTINGS.threads;
+    if (!parsed.threadsPersonal) parsed.threadsPersonal = DEFAULT_SETTINGS.threadsPersonal;
+    if (!parsed.substack) parsed.substack = DEFAULT_SETTINGS.substack;
+    if (!parsed.youtube) parsed.youtube = DEFAULT_SETTINGS.youtube;
+    if (!parsed.discord) parsed.discord = DEFAULT_SETTINGS.discord;
     if (!parsed.telegram || parsed.telegram.includes('+549')) parsed.telegram = 'https://t.me/tecnoeduca';
-    parsed.whatsapp = '';
-    parsed.phoneClean = '';
+    if (!parsed.whatsapp || parsed.whatsapp === '') parsed.whatsapp = '+54 9 2323 52-3149';
+    if (!parsed.phoneClean || parsed.phoneClean === '') parsed.phoneClean = '5492323523149';
     parsed.cvUrl = '';
     parsed.cvFileName = '';
     parsed.cvFileData = '';
     parsed.cvFileType = '';
     const merged = { ...DEFAULT_SETTINGS, ...parsed };
+    delete merged.adminPass;
     localStorage.setItem('tecnoeduca_settings', JSON.stringify(merged));
     return merged;
   } catch (e) {
@@ -624,6 +791,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // 3. Menú Móvil
   initMobileMenu();
 
+  // 3-B. Asistente Concierge Móvil ("¿Tenés dudas o consultas?")
+  if (typeof window.initConciergeSystem === 'function') {
+    window.initConciergeSystem();
+  }
+
   // 4. Header scroll effect
   initHeaderScroll();
 
@@ -646,18 +818,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 7. Asistente interactivo de WhatsApp
   initWhatsAppAssistant();
 
-  // 8. Botón de acceso admin en header
-  const openAdminBtn = document.getElementById('openAdminBtn');
-  if (openAdminBtn) {
-    openAdminBtn.addEventListener('click', openAdminModal);
-  }
-
-  // 9. Sincronización en segundo plano con Supabase Cloud
+  // 8. Sincronización pública en segundo plano con Supabase
   if (window.supabaseDB) {
     syncDataFromSupabase();
   }
 
-  // 10. Cierre de modales al hacer clic en el fondo o presionar Escape
+  // 9. Cierre de modales al hacer clic en el fondo o presionar Escape
   window.addEventListener('click', (e) => {
     if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) {
       if (e.target.id === 'contactModal') closeContactModal();
@@ -665,7 +831,6 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (e.target.id === 'articleModal' && typeof closeArticleModal === 'function') closeArticleModal();
       else if (e.target.id === 'resourceModal' && typeof closeResourceModal === 'function') closeResourceModal();
       else if (e.target.id === 'bookReaderModal' && typeof closeBookReader === 'function') closeBookReader();
-      else if (e.target.id === 'adminModal' && typeof closeAdminModal === 'function') closeAdminModal();
     }
   });
 
@@ -676,7 +841,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof closeArticleModal === 'function') closeArticleModal();
       if (typeof closeResourceModal === 'function') closeResourceModal();
       if (typeof closeBookReader === 'function') closeBookReader();
-      if (typeof closeAdminModal === 'function') closeAdminModal();
     }
   });
 
@@ -925,7 +1089,7 @@ function applySettingsToUI() {
     el.href = settings.instagram || 'https://www.instagram.com/tecnoeduca';
   });
   document.querySelectorAll('.fs-ig-personal').forEach(el => {
-    el.href = settings.instagramPersonal || 'https://www.instagram.com/';
+    el.href = settings.instagramPersonal || DEFAULT_SETTINGS.instagramPersonal;
   });
   document.querySelectorAll('.fs-tt').forEach(el => {
     el.href = settings.tiktok || 'https://www.tiktok.com/@tecnoeduca';
@@ -984,12 +1148,14 @@ function applySettingsToUI() {
     el.href = `mailto:${settings.email || 'tecnoeduca81@gmail.com'}`;
   });
   document.querySelectorAll('.footer-s-icon.s-sub').forEach(el => {
-    el.href = settings.substack || 'https://substack.com';
+    el.href = settings.substack || DEFAULT_SETTINGS.substack;
   });
 
   // Enlaces específicos de perfil personal Rosana si existen
   const linkRosanaIG = document.getElementById('linkRosanaIG');
-  if (linkRosanaIG) linkRosanaIG.href = settings.instagramPersonal || 'https://www.instagram.com/';
+  if (linkRosanaIG) linkRosanaIG.href = settings.instagramPersonal || DEFAULT_SETTINGS.instagramPersonal;
+  const linkRosanaThreads = document.getElementById('linkRosanaThreads');
+  if (linkRosanaThreads) linkRosanaThreads.href = settings.threadsPersonal || DEFAULT_SETTINGS.threadsPersonal;
   const linkRosanaFB = document.getElementById('linkRosanaFB');
   if (linkRosanaFB) linkRosanaFB.href = settings.facebookPersonal || 'https://www.facebook.com/';
   const linkRosanaDC = document.getElementById('linkRosanaDC');
@@ -1052,7 +1218,7 @@ function renderBlogPosts(categoryFilter = 'all', targetContainerId = 'blogPostsC
 
   const allArticles = getStoredArticles();
   // Los visitantes públicos solo ven artículos ya publicados (los programados a futuro se gestionan en el panel y calendario)
-  const articles = allArticles.filter(a => a.publishStatus !== 'scheduled');
+  const articles = allArticles.filter(a => a.publishStatus === 'published');
   let filtered = categoryFilter === 'all' 
     ? articles 
     : articles.filter(a => a.category.toLowerCase() === categoryFilter.toLowerCase());
@@ -1437,13 +1603,6 @@ function openArticleReader(articleId) {
   const modal = document.getElementById('articleModal');
   const readerContent = document.getElementById('articleReaderContent');
   const shareContainer = document.getElementById('socialShareIcons');
-  const editBtn = document.getElementById('readerAdminEditBtn');
-
-  // Si Rosana tiene sesión iniciada, mostrar botón de editar directo
-  if (editBtn) {
-    editBtn.style.display = isAdminLoggedIn ? 'inline-flex' : 'none';
-  }
-
   const parsedBody = formatArticleBody(post.body);
 
   // PREVISUALIZACIÓN DE VIDEO DE YOUTUBE (EVITA ERROR 153 MOSTRANDO MINIATURA Y OPCIÓN DIRECTA)
@@ -1676,18 +1835,6 @@ function generateShareIconsMarkup(title, url, rawUrl) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
     </button>
   `;
-}
-
-function editCurrentReadingArticle() {
-  if (!currentOpenArticleId) return;
-  const targetId = currentOpenArticleId;
-  closeArticleModal();
-  openAdminModal();
-  if (isAdminLoggedIn) {
-    editArticleFromAdmin(targetId);
-  } else {
-    alert('Ingresá tu contraseña de administradora en el panel para modificar este artículo.');
-  }
 }
 
 // Extractor de ID de YouTube
@@ -2073,7 +2220,7 @@ function createContactModalDOM() {
   document.body.appendChild(modal);
 }
 
-function submitModalContactInquiry() {
+async function submitModalContactInquiry() {
   const name = document.getElementById('modalContactName').value.trim();
   const surname = document.getElementById('modalContactSurname').value.trim();
   const contactReach = document.getElementById('modalContactReach').value.trim();
@@ -2096,14 +2243,19 @@ function submitModalContactInquiry() {
     read: false
   };
 
-  const messages = getStoredMessages();
-  messages.unshift(newInquiry);
-  saveMessages(messages);
-
-  if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-    window.supabaseDB.insertMessage(newInquiry).catch(err => {
-      console.warn('Sincronización Supabase pendiente:', err);
-    });
+  const submitButton = document.querySelector('#contactModalForm button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+  try {
+    if (!window.supabaseDB || typeof window.supabaseDB.insertMessage !== 'function') {
+      throw new Error('El servicio de mensajes no está disponible.');
+    }
+    await window.supabaseDB.insertMessage(newInquiry);
+  } catch (err) {
+    console.error('No se pudo enviar la consulta del formulario modal:', err);
+    alert('No se pudo enviar tu consulta. Tus datos no se guardaron; intentá nuevamente más tarde.');
+    return;
+  } finally {
+    if (submitButton) submitButton.disabled = false;
   }
 
   const alertEl = document.getElementById('modalFormSuccessAlert');
@@ -2118,7 +2270,7 @@ function submitModalContactInquiry() {
   }
 }
 
-function submitContactInquiry() {
+async function submitContactInquiry() {
   const nameEl = document.getElementById('contactName') || document.getElementById('contactFirstName');
   const surnameEl = document.getElementById('contactSurname') || document.getElementById('contactLastName');
   const emailEl = document.getElementById('contactEmail');
@@ -2149,15 +2301,19 @@ function submitContactInquiry() {
     read: false
   };
 
-  const messages = getStoredMessages();
-  messages.unshift(newInquiry);
-  saveMessages(messages);
-
-  // Enviar también a Supabase en tiempo real
-  if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-    window.supabaseDB.insertMessage(newInquiry).catch(err => {
-      console.warn('Aviso: mensaje guardado localmente, sincronización con Supabase pendiente:', err);
-    });
+  const submitButton = document.querySelector('#mainContactForm button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+  try {
+    if (!window.supabaseDB || typeof window.supabaseDB.insertMessage !== 'function') {
+      throw new Error('El servicio de mensajes no está disponible.');
+    }
+    await window.supabaseDB.insertMessage(newInquiry);
+  } catch (err) {
+    console.error('No se pudo enviar la consulta de contacto:', err);
+    alert('No se pudo enviar tu consulta. Tus datos no se guardaron; intentá nuevamente más tarde.');
+    return;
+  } finally {
+    if (submitButton) submitButton.disabled = false;
   }
 
   const alertEl = document.getElementById('formSuccessAlert');
@@ -2168,495 +2324,6 @@ function submitContactInquiry() {
 
   const mainForm = document.getElementById('mainContactForm');
   if (mainForm) mainForm.reset();
-}
-
-// ===================================================================
-// PANEL ADMINISTRATIVO CON PANTALLA COMPLETA Y EDICIÓN DE ARTÍCULOS
-// ===================================================================
-
-let isAdminLoggedIn = false;
-
-function togglePasswordVisibility(inputId, btn) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '🙈';
-  } else {
-    input.type = 'password';
-    btn.textContent = '👁️';
-  }
-}
-
-function toggleAdminFullscreen() {
-  const dialog = document.getElementById('adminPanelDialog');
-  const icon = document.getElementById('fullscreenIcon');
-  const label = document.getElementById('fullscreenLabel');
-  if (!dialog) return;
-
-  dialog.classList.toggle('fullscreen-mode');
-  const isFull = dialog.classList.contains('fullscreen-mode');
-
-  if (isFull) {
-    icon.textContent = '🗗';
-    label.textContent = 'Reducir Vista';
-  } else {
-    icon.textContent = '⛶';
-    label.textContent = 'Pantalla Completa';
-  }
-}
-
-// ===================================================================
-// GESTIÓN DE ADMINISTRADORES Y ROLES (SISTEMA MULTI-ADMIN RBAC)
-// ===================================================================
-
-const DEFAULT_ADMINS_KEY = 'tecnoeduca_admins_v1';
-let currentLoggedAdmin = null;
-
-function getStoredAdmins() {
-  const data = localStorage.getItem(DEFAULT_ADMINS_KEY);
-  if (!data) {
-    const defaultAdmins = [
-      {
-        id: 'admin_master',
-        name: 'Prof. Rosana',
-        user: 'admin',
-        pass: 'tecnoeduca2026',
-        role: 'general',
-        roleLabel: 'Administrador General',
-        permissions: ['all'],
-        createdAt: '2026-10-26'
-      }
-    ];
-    localStorage.setItem(DEFAULT_ADMINS_KEY, JSON.stringify(defaultAdmins));
-    return defaultAdmins;
-  }
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    return [];
-  }
-}
-
-function saveStoredAdmins(admins) {
-  localStorage.setItem(DEFAULT_ADMINS_KEY, JSON.stringify(admins));
-}
-
-let isAdminLoggedIn = true;
-let currentLoggedAdmin = {
-  id: 'admin_master',
-  name: 'Prof. Rosana',
-  user: 'admin',
-  role: 'general',
-  roleLabel: 'Administradora General',
-  permissions: ['all']
-};
-
-function openAdminModal() {
-  isAdminLoggedIn = true;
-  const modal = document.getElementById('adminModal');
-  const authScreen = document.getElementById('adminAuthScreen');
-  const dashScreen = document.getElementById('adminDashboardScreen');
-  const logoutBtn = document.getElementById('adminLogoutBtn');
-
-  if (modal) {
-    modal.style.display = 'block';
-  }
-  if (authScreen) authScreen.style.display = 'none';
-  if (dashScreen) dashScreen.style.display = 'block';
-  if (logoutBtn) logoutBtn.style.display = 'none';
-
-  loadAdminDashboard();
-}
-
-function closeAdminModal() {
-  const modal = document.getElementById('adminModal');
-  if (modal) modal.style.display = 'none';
-  document.body.style.overflow = 'auto';
-}
-
-function checkAdminPass() {
-  const userInput = document.getElementById('adminUserInput');
-  const passInput = document.getElementById('adminPasswordInput');
-  const enteredUser = (userInput ? userInput.value : 'admin').trim().toLowerCase();
-  const enteredPass = (passInput ? passInput.value : '').trim();
-  const settings = getStoredSettings();
-  const admins = getStoredAdmins();
-
-  // 1. Buscar coincidencia exacta por usuario y contraseña
-  let matchedAdmin = admins.find(a => 
-    (a.user.toLowerCase() === enteredUser || enteredUser === '') && a.pass === enteredPass
-  );
-
-  // 2. Si no coincide por usuario pero la contraseña es una de las claves maestras
-  if (!matchedAdmin) {
-    const masterPasses = [
-      'tecnoeduca2026',
-      'tecnoeduca',
-      'rosana2026',
-      'rosana',
-      'admin',
-      'docente',
-      (settings.adminPass || '').trim()
-    ].filter(Boolean);
-
-    if (masterPasses.includes(enteredPass)) {
-      matchedAdmin = admins.find(a => a.role === 'general') || {
-        id: 'admin_master',
-        name: 'Prof. Rosana',
-        user: 'admin',
-        role: 'general',
-        roleLabel: 'Administrador General',
-        permissions: ['all']
-      };
-    }
-  }
-
-  if (matchedAdmin) {
-    isAdminLoggedIn = true;
-    currentLoggedAdmin = matchedAdmin;
-    sessionStorage.setItem('tecnoeduca_current_admin', JSON.stringify(matchedAdmin));
-
-    const authScreen = document.getElementById('adminAuthScreen');
-    const dashScreen = document.getElementById('adminDashboardScreen');
-    const logoutBtn = document.getElementById('adminLogoutBtn');
-    const errBox = document.getElementById('adminLoginErrorMsg');
-
-    if (errBox) errBox.style.display = 'none';
-    if (authScreen) authScreen.style.display = 'none';
-    if (dashScreen) dashScreen.style.display = 'block';
-    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-
-    const modal = document.getElementById('adminModal');
-    if (modal) modal.scrollTop = 0;
-    const dialog = document.getElementById('adminPanelDialog');
-    if (dialog) dialog.scrollTop = 0;
-
-    if (passInput) passInput.value = '';
-    applyAdminRolePermissions(matchedAdmin);
-    loadAdminDashboard();
-  } else {
-    const errBox = document.getElementById('adminLoginErrorMsg');
-    if (errBox) {
-      errBox.innerHTML = `⚠️ Usuario o contraseña incorrectos. Podés ingresar con la clave por defecto: <strong>tecnoeduca2026</strong> o el usuario asignado.`;
-      errBox.style.display = 'block';
-    } else {
-      alert('❌ Usuario o contraseña incorrectos. Clave inicial maestra: tecnoeduca2026');
-    }
-    if (passInput) {
-      passInput.focus();
-      passInput.select();
-    }
-  }
-}
-
-function applyAdminRolePermissions(admin) {
-  if (!admin) {
-    admin = { name: 'Prof. Rosana', role: 'general', permissions: ['all'] };
-  }
-
-  // Actualizar indicador de usuario conectado en el header
-  const userBadge = document.getElementById('adminLoggedUserBadge');
-  if (userBadge) {
-    const isMaster = admin.role === 'general' || (admin.permissions && admin.permissions.includes('all'));
-    const roleTxt = isMaster ? '👑 Administrador General' : '👤 ' + (admin.roleLabel || 'Colaborador');
-    userBadge.innerHTML = `Conectado: <strong>${escapeHTML(admin.name)}</strong> <span style="font-size:0.75rem; background:rgba(105,68,152,0.12); padding:0.2rem 0.55rem; border-radius:12px; margin-left:4px; color:var(--primary-purple-dark); font-weight:800;">${roleTxt}</span>`;
-  }
-
-  const isGeneral = admin.role === 'general' || (admin.permissions && admin.permissions.includes('all'));
-  const perms = admin.permissions || [];
-
-  const tabPermMap = {
-    'articles': 'articles',
-    'editor': 'articles',
-    'calendar': 'calendar',
-    'analytics': 'analytics',
-    'library': 'library',
-    'book-editor': 'library',
-    'resources': 'resources',
-    'resource-editor': 'resources',
-    'messages': 'messages',
-    'comments': 'comments',
-    'security': 'security'
-  };
-
-  const buttons = document.querySelectorAll('.admin-tab-btn');
-  let firstAllowedTab = null;
-
-  buttons.forEach(btn => {
-    const onclickStr = btn.getAttribute('onclick') || '';
-    const match = onclickStr.match(/switchAdminTab\('([^']+)'\)/);
-    if (match) {
-      const tabName = match[1];
-      let allowed = false;
-
-      if (isGeneral) {
-        allowed = true;
-      } else if (tabName === 'security') {
-        allowed = false; // Solo Administrador General puede configurar seguridad y administradores
-      } else {
-        const requiredPerm = tabPermMap[tabName];
-        allowed = perms.includes(requiredPerm);
-      }
-
-      btn.style.display = allowed ? 'inline-flex' : 'none';
-      if (allowed && !firstAllowedTab) {
-        firstAllowedTab = tabName;
-      }
-    }
-  });
-
-  if (firstAllowedTab) {
-    switchAdminTab(firstAllowedTab);
-  }
-}
-
-function autofillAdminPass() {
-  const userInput = document.getElementById('adminUserInput');
-  const passInput = document.getElementById('adminPasswordInput');
-  if (userInput) userInput.value = 'admin';
-  if (passInput) {
-    passInput.value = 'tecnoeduca2026';
-    checkAdminPass();
-  }
-}
-
-// Alias compatibles para formularios anteriores
-function handleAdminLogin(event) {
-  if (event && event.preventDefault) event.preventDefault();
-  checkAdminPass();
-}
-
-function handleAdminLogout() {
-  logoutAdmin();
-}
-
-function logoutAdmin() {
-  if (!confirm('¿Deseás cerrar la sesión del panel administrativo?')) return;
-  isAdminLoggedIn = false;
-  currentLoggedAdmin = null;
-  sessionStorage.removeItem('tecnoeduca_current_admin');
-
-  document.getElementById('adminDashboardScreen').style.display = 'none';
-  document.getElementById('adminAuthScreen').style.display = 'block';
-  
-  const logoutBtn = document.getElementById('adminLogoutBtn');
-  if (logoutBtn) logoutBtn.style.display = 'none';
-
-  // Restablecer todas las pestañas para el próximo ingreso
-  document.querySelectorAll('.admin-tab-btn').forEach(b => b.style.display = 'inline-flex');
-  switchAdminTab('articles');
-
-  const dialog = document.getElementById('adminPanelDialog');
-  if (dialog) dialog.classList.remove('fullscreen-mode');
-}
-
-// ===================================================================
-// CRUD DE ADMINISTRADORES
-// ===================================================================
-
-function renderAdminUsersTable() {
-  const tbody = document.getElementById('adminUsersTbody');
-  if (!tbody) return;
-
-  const admins = getStoredAdmins();
-  if (admins.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No hay administradores registrados.</td></tr>`;
-    return;
-  }
-
-  const moduleNames = {
-    'analytics': '📊 Estadísticas',
-    'articles': '📚 Blog & Redactor',
-    'calendar': '📅 Calendario',
-    'library': '📖 Biblioteca',
-    'resources': '🎨 Recursos',
-    'messages': '📬 Mensajes',
-    'comments': '💬 Comentarios'
-  };
-
-  tbody.innerHTML = admins.map(a => {
-    const isMaster = a.id === 'admin_master' || a.role === 'general';
-    const roleBadge = isMaster 
-      ? `<span class="stat-tag-badge badge-primary">👑 Administrador General</span>`
-      : `<span class="stat-tag-badge badge-online">👤 Colaborador</span>`;
-
-    let permsBadge = '';
-    if (isMaster || (a.permissions && a.permissions.includes('all'))) {
-      permsBadge = `<span style="color:#166534; font-weight:700;">✨ Acceso Total (Todos los Módulos)</span>`;
-    } else if (a.permissions && a.permissions.length > 0) {
-      permsBadge = a.permissions.map(p => `<span class="stat-tag-badge" style="margin:2px;">${moduleNames[p] || p}</span>`).join(' ');
-    } else {
-      permsBadge = `<span style="color:var(--text-muted);">Sin módulos asignados</span>`;
-    }
-
-    return `
-      <tr>
-        <td><strong>${escapeHTML(a.name)}</strong></td>
-        <td><code>${escapeHTML(a.user)}</code></td>
-        <td>${roleBadge}</td>
-        <td>${permsBadge}</td>
-        <td style="text-align:right;">
-          <button class="btn-action-icon" onclick="editAdminUser('${a.id}')" title="Modificar permisos o contraseña">✏️</button>
-          ${isMaster ? '' : `<button class="btn-action-icon btn-del" onclick="deleteAdminUser('${a.id}')" title="Eliminar administrador">🗑️</button>`}
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function openAddAdminModal() {
-  const idEl = document.getElementById('editAdminUserId');
-  const nameEl = document.getElementById('editAdminName');
-  const userEl = document.getElementById('editAdminUser');
-  const passEl = document.getElementById('editAdminPass');
-  const roleEl = document.getElementById('editAdminRole');
-  const titleEl = document.getElementById('adminUserModalTitle');
-
-  if (idEl) idEl.value = '';
-  if (nameEl) nameEl.value = '';
-  if (userEl) userEl.value = '';
-  if (passEl) passEl.value = '';
-  if (roleEl) roleEl.value = 'custom';
-  if (titleEl) titleEl.textContent = '➕ Agregar Nuevo Administrador';
-
-  ['analytics', 'articles', 'calendar', 'library', 'resources', 'messages', 'comments'].forEach(p => {
-    const cb = document.getElementById(`perm_${p}`);
-    if (cb) cb.checked = false;
-  });
-
-  toggleAdminPermissionsFields();
-  const modal = document.getElementById('adminUserModal');
-  if (modal) modal.style.display = 'flex';
-}
-
-function closeAdminUserModal() {
-  const modal = document.getElementById('adminUserModal');
-  if (modal) modal.style.display = 'none';
-}
-
-function toggleAdminPermissionsFields() {
-  const roleSelect = document.getElementById('editAdminRole');
-  const box = document.getElementById('permissionsCheckboxesBlock');
-  if (roleSelect && box) {
-    box.style.display = (roleSelect.value === 'general') ? 'none' : 'block';
-  }
-}
-
-function editAdminUser(id) {
-  const admins = getStoredAdmins();
-  const admin = admins.find(a => a.id === id);
-  if (!admin) return;
-
-  const idEl = document.getElementById('editAdminUserId');
-  const nameEl = document.getElementById('editAdminName');
-  const userEl = document.getElementById('editAdminUser');
-  const passEl = document.getElementById('editAdminPass');
-  const roleEl = document.getElementById('editAdminRole');
-  const titleEl = document.getElementById('adminUserModalTitle');
-
-  if (idEl) idEl.value = admin.id;
-  if (nameEl) nameEl.value = admin.name || '';
-  if (userEl) userEl.value = admin.user || '';
-  if (passEl) passEl.value = admin.pass || '';
-  if (roleEl) roleEl.value = admin.role || 'custom';
-  if (titleEl) titleEl.textContent = '✏️ Modificar Administrador';
-
-  const isGeneral = admin.role === 'general' || (admin.permissions && admin.permissions.includes('all'));
-  const perms = admin.permissions || [];
-
-  ['analytics', 'articles', 'calendar', 'library', 'resources', 'messages', 'comments'].forEach(p => {
-    const cb = document.getElementById(`perm_${p}`);
-    if (cb) cb.checked = isGeneral || perms.includes(p);
-  });
-
-  toggleAdminPermissionsFields();
-  const modal = document.getElementById('adminUserModal');
-  if (modal) modal.style.display = 'flex';
-}
-
-function saveAdminUser() {
-  const id = (document.getElementById('editAdminUserId').value || '').trim();
-  const name = (document.getElementById('editAdminName').value || '').trim();
-  const user = (document.getElementById('editAdminUser').value || '').trim().toLowerCase();
-  const pass = (document.getElementById('editAdminPass').value || '').trim();
-  const role = document.getElementById('editAdminRole').value;
-
-  if (!name || !user || !pass) {
-    alert('⚠️ Por favor completá nombre, usuario y contraseña.');
-    return;
-  }
-
-  let perms = [];
-  if (role === 'general') {
-    perms = ['all'];
-  } else {
-    ['analytics', 'articles', 'calendar', 'library', 'resources', 'messages', 'comments'].forEach(p => {
-      const cb = document.getElementById(`perm_${p}`);
-      if (cb && cb.checked) perms.push(p);
-    });
-    if (perms.length === 0) {
-      alert('⚠️ Por favor seleccioná al menos una función o módulo para este administrador.');
-      return;
-    }
-  }
-
-  let admins = getStoredAdmins();
-
-  if (id) {
-    // Editar existente
-    admins = admins.map(a => {
-      if (a.id === id) {
-        return {
-          ...a,
-          name,
-          user,
-          pass,
-          role,
-          roleLabel: role === 'general' ? 'Administrador General' : 'Colaborador',
-          permissions: perms
-        };
-      }
-      return a;
-    });
-  } else {
-    // Verificar si el usuario ya existe
-    if (admins.some(a => a.user.toLowerCase() === user)) {
-      alert(`⚠️ El nombre de usuario "${user}" ya está en uso. Por favor elegí otro.`);
-      return;
-    }
-
-    const newAdmin = {
-      id: 'admin_' + Date.now(),
-      name,
-      user,
-      pass,
-      role,
-      roleLabel: role === 'general' ? 'Administrador General' : 'Colaborador',
-      permissions: perms,
-      createdAt: new Date().toISOString().slice(0, 10)
-    };
-    admins.push(newAdmin);
-  }
-
-  saveStoredAdmins(admins);
-  renderAdminUsersTable();
-  closeAdminUserModal();
-  alert('✨ Administrador guardado exitosamente.');
-}
-
-function deleteAdminUser(id) {
-  if (id === 'admin_master') {
-    alert('⚠️ No podés eliminar al Administrador General principal.');
-    return;
-  }
-  if (!confirm('¿Estás seguro de que deseás eliminar este administrador? Ya no podrá acceder al panel.')) return;
-
-  let admins = getStoredAdmins();
-  admins = admins.filter(a => a.id !== id);
-  saveStoredAdmins(admins);
-  renderAdminUsersTable();
-  alert('🗑️ Administrador eliminado correctamente.');
 }
 
 // ===================================================================
@@ -2675,8 +2342,7 @@ function downloadSystemBackup() {
     resources: getStoredResources(),
     messages: getStoredMessages(),
     analytics: getStoredAnalytics(),
-    settings: getStoredSettings(),
-    admins: getStoredAdmins()
+    settings: getStoredSettings()
   };
 
   const jsonStr = JSON.stringify(backupData, null, 2);
@@ -2692,7 +2358,7 @@ function downloadSystemBackup() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  alert('💾 ¡Copia de seguridad descargada exitosamente!\n\nSe guardó el archivo .JSON en tu carpeta de Descargas con todos los artículos, recursos, estadísticas y usuarios.');
+  alert('💾 ¡Copia de seguridad descargada exitosamente!\n\nSe guardó el archivo .JSON en tu carpeta de Descargas con tus contenidos y configuraciones.');
 }
 
 function handleRestoreBackupFile(event) {
@@ -2716,7 +2382,7 @@ function handleRestoreBackupFile(event) {
         `• Libros de Biblioteca (${(data.books || []).length})\n` +
         `• Banco de Recursos (${(data.resources || []).length})\n` +
         `• Mensajes recibidos (${(data.messages || []).length})\n` +
-        `• Estadísticas y Administradores\n\n` +
+        `• Estadísticas y configuración\n\n` +
         `¿Deseás continuar?`
       );
 
@@ -2730,10 +2396,7 @@ function handleRestoreBackupFile(event) {
       if (data.messages) localStorage.setItem('tecnoeduca_messages_v1', JSON.stringify(data.messages));
       if (data.analytics) localStorage.setItem('tecnoeduca_analytics_v1', JSON.stringify(data.analytics));
       if (data.settings) localStorage.setItem('tecnoeduca_settings_v1', JSON.stringify(data.settings));
-      if (data.admins) localStorage.setItem('tecnoeduca_admins_v1', JSON.stringify(data.admins));
-
       applySettingsToUI();
-      loadAdminDashboard();
 
       alert('✨ ¡Copia de seguridad restaurada exitosamente!\n\nTodos los datos y configuraciones fueron actualizados.');
       location.reload();
@@ -2751,7 +2414,7 @@ function handleRestoreBackupFile(event) {
 function exportAnalyticsReportToPDF() {
   const analytics = getStoredAnalytics();
   const articles = getStoredArticles();
-  const currentAdmin = currentLoggedAdmin || { name: 'Prof. Rosana' };
+  const currentAdmin = { name: 'Prof. Rosana' };
   const dateStr = new Date().toLocaleDateString('es-AR', {
     weekday: 'long',
     year: 'numeric',
@@ -2973,7 +2636,6 @@ function loadAdminDashboard() {
   renderAnalyticsDashboard();
   renderAdminBooksTable();
   renderAdminResourcesTable();
-  renderAdminUsersTable();
   updateInboxBadge();
   
   // Cargar enlaces actuales en pestaña de configuración
@@ -3035,14 +2697,18 @@ function renderAdminArticlesTable() {
   }
 
   tbody.innerHTML = articles.map(a => {
-    const isScheduled = a.publishStatus === 'scheduled';
-    const statusMarkup = isScheduled 
-      ? `<span class="badge" style="background:#FEF3C7; color:#92400E; font-weight:800; padding:0.35rem 0.65rem; border-radius:6px; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.35rem; border:1px solid #FCD34D;">⏰ Programado: ${escapeHTML(a.scheduledDate || a.date)} ${a.scheduledTime ? `(${a.scheduledTime} hs)` : ''}</span>`
-      : `<span class="badge" style="background:#ECFDF5; color:#065F46; font-weight:800; padding:0.35rem 0.65rem; border-radius:6px; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.35rem; border:1px solid #A7F3D0;">🟢 Publicado: ${escapeHTML(a.date)}</span>`;
-
-    const quickPublishBtn = isScheduled 
-      ? `<button class="btn-action-sm" style="background:#205A65; color:#FFFFFF; border-color:#205A65;" onclick="publishScheduledArticleNow('${a.id}')" title="Publicar de inmediato en el blog">🚀 Publicar ya</button>`
-      : '';
+    let statusMarkup = '';
+    let toggleBtn = '';
+    if (a.publishStatus === 'draft') {
+      statusMarkup = `<span class="badge" style="background:#F3F4F6; color:#4B5563; font-weight:800; padding:0.35rem 0.65rem; border-radius:6px; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.35rem; border:1px solid #D1D5DB;">⚪ Borrador / Despublicado</span>`;
+      toggleBtn = `<button class="btn-action-sm" style="background:#205A65; color:#FFFFFF; border-color:#205A65;" onclick="toggleArticlePublishStatus('${a.id}')" title="Publicar este artículo en la web pública">🚀 Publicar</button>`;
+    } else if (a.publishStatus === 'scheduled') {
+      statusMarkup = `<span class="badge" style="background:#FEF3C7; color:#92400E; font-weight:800; padding:0.35rem 0.65rem; border-radius:6px; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.35rem; border:1px solid #FCD34D;">⏰ Programado: ${escapeHTML(a.scheduledDate || a.date)} ${a.scheduledTime ? `(${a.scheduledTime} hs)` : ''}</span>`;
+      toggleBtn = `<button class="btn-action-sm" style="background:#205A65; color:#FFFFFF; border-color:#205A65;" onclick="publishScheduledArticleNow('${a.id}')" title="Publicar de inmediato en el blog">🚀 Publicar ya</button>`;
+    } else {
+      statusMarkup = `<span class="badge" style="background:#ECFDF5; color:#065F46; font-weight:800; padding:0.35rem 0.65rem; border-radius:6px; font-size:0.8rem; display:inline-flex; align-items:center; gap:0.35rem; border:1px solid #A7F3D0;">🟢 Publicado: ${escapeHTML(a.date)}</span>`;
+      toggleBtn = `<button class="btn-action-sm" onclick="toggleArticlePublishStatus('${a.id}')" title="Ocultar de la web sin borrar (pasar a borrador)">👁️‍🗨️ Despublicar</button>`;
+    }
 
     return `
       <tr>
@@ -3054,9 +2720,9 @@ function renderAdminArticlesTable() {
         <td>${statusMarkup}</td>
         <td style="text-align:right;">
           <div style="display:inline-flex; gap:0.4rem; justify-content:flex-end; align-items:center;">
-            ${quickPublishBtn}
+            ${toggleBtn}
             <button class="btn-action-sm" onclick="editArticleFromAdmin('${a.id}')" title="Modificar el contenido o título de este artículo">✏️ Modificar</button>
-            <button class="btn-action-sm btn-danger" onclick="deleteArticleFromAdmin('${a.id}')" title="Eliminar artículo">🗑️</button>
+            <button class="btn-action-sm btn-danger" onclick="deleteArticleFromAdmin('${a.id}')" title="Eliminar definitivamente de Supabase">🗑️ Eliminar</button>
           </div>
         </td>
       </tr>
@@ -3185,9 +2851,6 @@ function saveBookFromAdmin() {
         accessType
       };
       saveBooks(books);
-      if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-        window.supabaseDB.upsertBook(books[idx]).catch(e => console.warn('Supabase sync libro:', e));
-      }
       alert('✅ ¡Libro modificado y actualizado con éxito!');
     }
   } else {
@@ -3205,9 +2868,6 @@ function saveBookFromAdmin() {
     };
     books.unshift(newBook);
     saveBooks(books);
-    if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-      window.supabaseDB.upsertBook(newBook).catch(e => console.warn('Supabase sync nuevo libro:', e));
-    }
     alert('🎉 ¡Libro guardado y publicado en la Biblioteca Digital!');
   }
 
@@ -3223,9 +2883,6 @@ function deleteBookFromAdmin(id) {
   let books = getStoredBooks();
   books = books.filter(b => b.id !== id);
   saveBooks(books);
-  if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-    window.supabaseDB.deleteBook(id).catch(e => console.warn('Supabase delete libro:', e));
-  }
   renderAdminBooksTable();
   renderLibraryBooks('all', 'all', 'libraryHomeContainer');
   renderLibraryBooks('all', 'all', 'libraryAllContainer');
@@ -3548,9 +3205,6 @@ function saveArticleFromAdmin() {
         date: displayDate
       };
       saveArticles(articles);
-      if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-        window.supabaseDB.upsertArticle(articles[index]).catch(e => console.warn('Supabase sync artículo:', e));
-      }
       if (isScheduled) {
         alert(`⏰ ¡Publicación agendada para el ${displayDate} a las ${scheduledTime} hs!\nSe agregó a tu Calendario Editorial.`);
       } else {
@@ -3579,9 +3233,6 @@ function saveArticleFromAdmin() {
     };
     articles.unshift(newPost);
     saveArticles(articles);
-    if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-      window.supabaseDB.upsertArticle(newPost).catch(e => console.warn('Supabase sync nuevo artículo:', e));
-    }
     if (isScheduled) {
       alert(`🎉 ¡Publicación programada exitosamente para el ${displayDate} a las ${scheduledTime} hs!\nSe agregó a tu Calendario Editorial.`);
     } else {
@@ -3596,18 +3247,60 @@ function saveArticleFromAdmin() {
   switchAdminTab(isScheduled ? 'calendar' : 'articles');
 }
 
-function deleteArticleFromAdmin(id) {
-  if (!confirm('¿Estás segura de que deseás eliminar este artículo del blog?')) return;
-
+async function toggleArticlePublishStatus(id) {
   let articles = getStoredArticles();
-  articles = articles.filter(a => a.id !== id);
-  saveArticles(articles);
-  if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-    window.supabaseDB.deleteArticle(id).catch(e => console.warn('Supabase delete artículo:', e));
+  const article = articles.find(a => a.id === id);
+  if (!article) return;
+
+  const newStatus = article.publishStatus === 'published' ? 'draft' : 'published';
+  article.publishStatus = newStatus;
+  article.updated_at = new Date().toISOString();
+
+  try {
+    if (typeof showToastNotification === 'function') {
+      showToastNotification(newStatus === 'published' ? 'Publicando en la web...' : 'Despublicando artículo...', '⏳');
+    }
+
+    saveArticles(articles);
+    renderAdminArticlesTable();
+    if (typeof renderEditorialCalendar === 'function') renderEditorialCalendar();
+    if (typeof renderBlogPosts === 'function') renderBlogPosts('all');
+
+    if (typeof showToastNotification === 'function') {
+      showToastNotification(newStatus === 'published' ? 'Artículo publicado en la web.' : 'Artículo despublicado (guardado como borrador).', newStatus === 'published' ? '🟢' : '⚪');
+    }
+  } catch (err) {
+    console.error('Error al cambiar estado de publicación:', err);
+    alert('❌ No se pudo actualizar el artículo: ' + (err.message || err));
+  }
+}
+
+async function deleteArticleFromAdmin(id) {
+  const articles = getStoredArticles();
+  const target = articles.find(a => a.id === id);
+  const title = target ? target.title : id;
+
+  if (!confirm(`¿Deseás quitar de este navegador el artículo "${title}"? La base pública no se modifica desde el sitio web.`)) {
+    return;
   }
 
-  renderAdminArticlesTable();
-  renderBlogPosts('all');
+  try {
+    // Actualizar almacenamiento local
+    const updated = getStoredArticles().filter(a => a.id !== id);
+    saveArticles(updated);
+
+    // Actualizar tablas y vistas
+    renderAdminArticlesTable();
+    if (typeof renderEditorialCalendar === 'function') renderEditorialCalendar();
+    if (typeof renderBlogPosts === 'function') renderBlogPosts('all');
+
+    if (typeof showToastNotification === 'function') {
+      showToastNotification('Artículo quitado de este navegador.', '🗑️');
+    }
+  } catch (err) {
+    console.error('Error al eliminar artículo:', err);
+    alert('❌ No se pudo quitar el artículo: ' + (err.message || err));
+  }
 }
 
 // Renderizar Bandeja de Mensajes
@@ -3675,9 +3368,6 @@ function toggleReadMessage(id) {
     saveMessages(messages);
     renderAdminMessages();
     updateInboxBadge();
-    if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-      window.supabaseDB.markMessageRead(id, m.read).catch(e => console.warn('Supabase mark read:', e));
-    }
   }
 }
 
@@ -3688,9 +3378,6 @@ function deleteMessage(id) {
   saveMessages(messages);
   renderAdminMessages();
   updateInboxBadge();
-  if (window.supabaseDB && window.supabaseDB.isAvailable()) {
-    window.supabaseDB.deleteMessage(id).catch(e => console.warn('Supabase delete message:', e));
-  }
 }
 
 // Moderación de Comentarios
@@ -3769,45 +3456,6 @@ function deleteCommentAdmin(articleId, commentId) {
   }
 }
 
-// Cambio seguro de contraseña de administradora
-function changeAdminPasswordSecure() {
-  const currentPass = document.getElementById('currentPassInput').value;
-  const newPass = document.getElementById('newPassInput').value;
-  const confirmPass = document.getElementById('confirmPassInput').value;
-
-  const settings = getStoredSettings();
-
-  if (currentPass !== settings.adminPass) {
-    alert('❌ La contraseña actual no coincide.');
-    return;
-  }
-
-  if (newPass.length < 5) {
-    alert('⚠️ La nueva contraseña debe tener al menos 5 caracteres.');
-    return;
-  }
-
-  if (newPass !== confirmPass) {
-    alert('⚠️ La nueva contraseña y la confirmación no son iguales.');
-    return;
-  }
-
-  settings.adminPass = newPass;
-  saveSettings(settings);
-
-  document.getElementById('currentPassInput').value = '';
-  document.getElementById('newPassInput').value = '';
-  document.getElementById('confirmPassInput').value = '';
-
-  const alertEl = document.getElementById('passSuccessAlert');
-  if (alertEl) {
-    alertEl.style.display = 'block';
-    setTimeout(() => { alertEl.style.display = 'none'; }, 5000);
-  }
-
-  alert('🔐 ¡Contraseña actualizada exitosamente! Guardala en un lugar seguro.');
-}
-
 // Guardar ajustes de redes, CV y LinkedIn
 function saveAdminSettings() {
   const current = getStoredSettings();
@@ -3860,11 +3508,6 @@ function saveAdminSettings() {
 
   saveSettings(updated);
   applySettingsToUI();
-
-  // Sincronizar en tiempo real con Supabase
-  if (window.supabaseDB) {
-    window.supabaseDB.upsertSettings(updated).catch(err => console.warn('Supabase upsertSettings error:', err));
-  }
 
   const badge = document.getElementById('settingsSavedBadge');
   if (badge) {
@@ -4066,19 +3709,26 @@ function sendCustomWhatsApp() {
 function initMobileMenu() {
   const menuToggle = document.getElementById('menuToggle');
   const navMenu = document.getElementById('navMenu');
-  const navLinks = document.querySelectorAll('.nav-link');
+  if (!menuToggle || !navMenu) return;
 
-  if (menuToggle && navMenu) {
-    menuToggle.addEventListener('click', () => {
-      navMenu.classList.toggle('open');
-    });
+  menuToggle.onclick = window.toggleMobileNav;
 
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        navMenu.classList.remove('open');
-      });
-    });
-  }
+  const navLinks = navMenu.querySelectorAll('.nav-link, .nav-cta-mobile a');
+  navLinks.forEach(link => {
+    link.addEventListener('click', window.closeMobileNav);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (navMenu.classList.contains('open') && !navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+      window.closeMobileNav();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      window.closeMobileNav();
+    }
+  });
 }
 
 function initHeaderScroll() {
@@ -4125,7 +3775,8 @@ function renderResources(category = 'all', searchQuery = '', targetContainerId =
   if (targetContainerId === 'resourcesContainer') {
     currentResourceCategory = category;
   }
-  let resources = getStoredResources();
+  const allResources = getStoredResources().filter(r => r.publishStatus !== 'draft');
+  let resources = allResources;
 
   if (category !== 'all') {
     resources = resources.filter(r => r.category === category);
@@ -4149,12 +3800,15 @@ function renderResources(category = 'all', searchQuery = '', targetContainerId =
   }
 
   if (resources.length === 0) {
+    const emptyMessage = allResources.length === 0
+      ? 'Todavía no hay recursos cargados.'
+      : 'No encontramos archivos con ese filtro o búsqueda. Probá con otra categoría o restablecé los filtros.';
     container.innerHTML = `
       <div class="empty-resources-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: var(--color-bg-soft); border-radius: 16px; border: 2px dashed var(--primary-purple-border);">
         <span style="font-size: 3.5rem; display: block; margin-bottom: 1rem;">🔍</span>
-        <h3 style="font-size: 1.4rem; color: var(--primary-purple-dark); margin-bottom: 0.5rem;">No se encontraron recursos</h3>
-        <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem;">No encontramos archivos con ese filtro o búsqueda. Probá con otra categoría o restablecé los filtros.</p>
-        <button class="btn btn-primary" onclick="resetResourceFilters()">Mostrar todos los recursos</button>
+        <h3 style="font-size: 1.4rem; color: var(--primary-purple-dark); margin-bottom: 0.5rem;">${allResources.length === 0 ? 'Próximamente' : 'No se encontraron recursos'}</h3>
+        <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 1.5rem;">${emptyMessage}</p>
+        ${allResources.length > 0 ? '<button class="btn btn-primary" onclick="resetResourceFilters()">Mostrar todos los recursos</button>' : ''}
       </div>
     `;
     return;
@@ -4393,23 +4047,34 @@ function renderAdminResourcesTable() {
   if (!tbody) return;
 
   const resources = getStoredResources();
-  tbody.innerHTML = resources.map(r => `
+  tbody.innerHTML = resources.map(r => {
+    const statusBadge = r.publishStatus === 'draft'
+      ? `<span class="badge" style="background:#F3F4F6; color:#4B5563; font-weight:800; padding:0.25rem 0.55rem; border-radius:6px; font-size:0.75rem; border:1px solid #D1D5DB;">⚪ Borrador</span>`
+      : `<span class="badge" style="background:#ECFDF5; color:#065F46; font-weight:800; padding:0.25rem 0.55rem; border-radius:6px; font-size:0.75rem; border:1px solid #A7F3D0;">🟢 Publicado</span>`;
+
+    const toggleBtn = r.publishStatus === 'draft'
+      ? `<button class="btn-action-sm" style="background:#205A65; color:#FFF;" onclick="toggleResourcePublishStatus('${r.id}')" title="Publicar recurso en la web">🚀 Publicar</button>`
+      : `<button class="btn-action-sm" onclick="toggleResourcePublishStatus('${r.id}')" title="Despublicar recurso (pasar a borrador)">👁️‍🗨️ Despublicar</button>`;
+
+    return `
     <tr>
       <td>
         <strong>${escapeHTML(r.title)}</strong>
         <div style="font-size:0.82rem; color:var(--text-muted);">${r.format} • ${r.software || ''}</div>
       </td>
       <td><span class="post-cat-badge">${r.categoryLabel || RESOURCE_CATEGORY_LABELS[r.category] || r.category}</span></td>
-      <td><span class="res-format-pill" style="display:inline-block; font-size:0.75rem;">${r.format}</span></td>
+      <td>${statusBadge}</td>
       <td>${r.date || '-'}</td>
-      <td>
-        <div class="admin-table-actions">
-          <button class="btn-action-icon" onclick="editResourceFromAdmin('${r.id}')" title="Modificar este recurso">✏️ Modificar</button>
-          <button class="btn-action-icon btn-del" onclick="deleteResourceFromAdmin('${r.id}')" title="Eliminar">🗑️</button>
+      <td style="text-align:right;">
+        <div class="admin-table-actions" style="display:inline-flex; gap:0.35rem; justify-content:flex-end; align-items:center;">
+          ${toggleBtn}
+          <button class="btn-action-sm" onclick="editResourceFromAdmin('${r.id}')" title="Modificar este recurso">✏️ Modificar</button>
+          <button class="btn-action-sm btn-danger" onclick="deleteResourceFromAdmin('${r.id}')" title="Eliminar definitivamente de Supabase">🗑️ Eliminar</button>
         </div>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function prepareNewResource() {
@@ -4521,18 +4186,64 @@ function editResourceFromAdmin(resId) {
   switchAdminTab('resource-editor');
 }
 
-function deleteResourceFromAdmin(resId) {
-  if (!confirm('¿Estás segura de eliminar este recurso o proyecto?')) return;
+async function toggleResourcePublishStatus(resId) {
   let resources = getStoredResources();
-  resources = resources.filter(r => r.id !== resId);
-  saveResources(resources);
-  renderAdminResourcesTable();
-  renderResources(currentResourceCategory);
-  renderEditorialCalendar();
+  const res = resources.find(r => r.id === resId);
+  if (!res) return;
 
-  // Sincronizar eliminación con Supabase
-  if (window.supabaseDB) {
-    window.supabaseDB.deleteResource(resId).catch(err => console.warn('Supabase deleteResource error:', err));
+  const newStatus = res.publishStatus === 'draft' ? 'published' : 'draft';
+  res.publishStatus = newStatus;
+
+  try {
+    if (typeof showToastNotification === 'function') {
+      showToastNotification(newStatus === 'published' ? 'Publicando recurso...' : 'Despublicando recurso...', '⏳');
+    }
+
+    saveResources(resources);
+    renderAdminResourcesTable();
+    if (typeof renderResources === 'function') {
+      renderResources(typeof currentResourceCategory !== 'undefined' ? currentResourceCategory : 'all');
+      if (document.getElementById('homeResourcesContainer')) {
+        renderResources('all', '', 'homeResourcesContainer');
+      }
+    }
+
+    if (typeof showToastNotification === 'function') {
+      showToastNotification(newStatus === 'published' ? 'Recurso publicado en la web.' : 'Recurso despublicado (guardado como borrador).', newStatus === 'published' ? '🟢' : '⚪');
+    }
+  } catch (err) {
+    console.error('Error al cambiar estado de publicación del recurso:', err);
+    alert('❌ No se pudo actualizar el recurso: ' + (err.message || err));
+  }
+}
+
+async function deleteResourceFromAdmin(resId) {
+  const resources = getStoredResources();
+  const target = resources.find(r => r.id === resId);
+  const title = target ? target.title : resId;
+
+  if (!confirm(`¿Deseás quitar de este navegador el recurso "${title}"? La base pública no se modifica desde el sitio web.`)) {
+    return;
+  }
+
+  try {
+    const updated = getStoredResources().filter(r => r.id !== resId);
+    saveResources(updated);
+
+    renderAdminResourcesTable();
+    if (typeof renderResources === 'function') {
+      renderResources(typeof currentResourceCategory !== 'undefined' ? currentResourceCategory : 'all');
+      if (document.getElementById('homeResourcesContainer')) {
+        renderResources('all', '', 'homeResourcesContainer');
+      }
+    }
+
+    if (typeof showToastNotification === 'function') {
+      showToastNotification('Recurso quitado de este navegador.', '🗑️');
+    }
+  } catch (err) {
+    console.error('Error al eliminar recurso:', err);
+    alert('❌ No se pudo quitar el recurso: ' + (err.message || err));
   }
 }
 
@@ -4651,12 +4362,6 @@ function saveResourceFromAdmin() {
   renderAdminResourcesTable();
   renderResources(currentResourceCategory);
   renderEditorialCalendar();
-
-  // Sincronizar recurso en Supabase
-  const savedRes = isEditing ? resources.find(r => r.id === idInput.value) : resources[0];
-  if (window.supabaseDB && savedRes) {
-    window.supabaseDB.upsertResource(savedRes).catch(err => console.warn('Supabase upsertResource error:', err));
-  }
 
   if (isScheduled) {
     alert(`⏰ ¡Lanzamiento agendado para el ${displayDate} a las ${scheduledTime} hs!\nSe agregó a tu Calendario Editorial.`);
@@ -5974,42 +5679,6 @@ async function handleSupabaseTestConnection() {
   }
 }
 
-async function handleSupabaseSyncAll() {
-  if (!window.supabaseDB || !window.supabaseDB.isAvailable()) {
-    alert('⚠️ Conector de Supabase no disponible.');
-    return;
-  }
-  if (!confirm('¿Deseás subir todos los artículos, libros, recursos y enlaces locales a tu base de datos Supabase en la nube?')) {
-    return;
-  }
-  setSupabaseBadgeStatus('⏳ Sincronizando datos con la nube...', '#e6a23c');
-  try {
-    const res = await window.supabaseDB.syncAllLocalToSupabase();
-    if (res && res.success && (!res.errors || res.errors.length === 0)) {
-      alert('🎉 ¡Sincronización completa con Supabase!\n\nSe subieron con éxito a la nube:\n• ' + (res.articles || 0) + ' Artículos del Blog\n• ' + (res.books || 0) + ' Libros y Apuntes\n• ' + (res.resources || 0) + ' Recursos Digitales\n• Configuración y Enlaces de Redes');
-      setSupabaseBadgeStatus('🟢 Sincronizado en Tiempo Real', '#67c23a');
-    } else {
-      let errReport = '⚠️ Detalle de la sincronización con Supabase:\n\n';
-      if (res && res.errors && res.errors.length > 0) {
-        res.errors.forEach(e => {
-          errReport += `• ${e.modulo}: ${e.detalle}\n`;
-        });
-      } else {
-        errReport += (res?.error?.message || 'Error desconocido');
-      }
-      errReport += '\n💡 Por favor ejecutá el script "GRANT" en el SQL Editor de Supabase para habilitar permisos de escritura.';
-      alert(errReport);
-      if (statusEl) {
-        statusEl.innerHTML = '⚠️ Revisar permisos en Supabase';
-        statusEl.style.color = '#f56c6c';
-      }
-    }
-  } catch (err) {
-    console.error('Error en syncAll:', err);
-    alert('❌ Error al sincronizar: ' + (err.message || err));
-  }
-}
-
 async function syncDataFromSupabase() {
   if (!window.supabaseDB) return;
   try {
@@ -6022,9 +5691,9 @@ async function syncDataFromSupabase() {
       applySettingsToUI();
     }
 
-    // 2. Artículos del blog
+    // 2. Artículos del blog (sincronizar incluso si está vacío)
     const cloudArticles = await window.supabaseDB.getArticles();
-    if (cloudArticles && cloudArticles.length > 0) {
+    if (cloudArticles !== null) {
       saveArticles(cloudArticles);
       if (document.getElementById('blogPostsContainer')) {
         renderBlogPosts(typeof currentBlogCategory !== 'undefined' ? currentBlogCategory : 'all');
@@ -6034,28 +5703,24 @@ async function syncDataFromSupabase() {
       }
     }
 
-    // 3. Libros de biblioteca
+    // 3. Biblioteca (sincronizar incluso si está vacía)
     const cloudBooks = await window.supabaseDB.getBooks();
-    if (cloudBooks && cloudBooks.length > 0) {
+    if (cloudBooks !== null) {
       saveBooks(cloudBooks);
       if (document.getElementById('libraryHomeContainer')) {
         renderLibraryBooks('all', 'all', 'libraryHomeContainer');
       }
       if (document.getElementById('libraryAllContainer')) {
-        renderLibraryBooks(
-          typeof currentBookCategory !== 'undefined' ? currentBookCategory : 'all',
-          typeof currentBookLevel !== 'undefined' ? currentBookLevel : 'all',
-          'libraryAllContainer'
-        );
+        renderLibraryBooks('all', 'all', 'libraryAllContainer');
       }
-      if (document.getElementById('adminBooksTableBody')) {
+      if (document.getElementById('adminBooksTableBody') || document.getElementById('adminBooksTbody')) {
         renderAdminBooksTable();
       }
     }
 
-    // 4. Banco de recursos
+    // 4. Banco de recursos y proyectos (sincronizar incluso si está vacío)
     const cloudResources = await window.supabaseDB.getResources();
-    if (cloudResources && cloudResources.length > 0) {
+    if (cloudResources !== null) {
       saveResources(cloudResources);
       if (document.getElementById('resourcesContainer') || document.getElementById('resourcesGridContainer')) {
         renderResources(typeof currentResourceCategory !== 'undefined' ? currentResourceCategory : 'all');
@@ -6065,16 +5730,6 @@ async function syncDataFromSupabase() {
       }
       if (document.getElementById('adminResourcesTableBody') || document.getElementById('adminResourcesTbody')) {
         renderAdminResourcesTable();
-      }
-    }
-
-    // 5. Mensajes de consulta (si el usuario está en el panel docente)
-    if (document.getElementById('adminMessagesTbody') || document.getElementById('adminMessagesTableBody') || document.getElementById('adminMessagesList')) {
-      const cloudMessages = await window.supabaseDB.getMessages();
-      if (cloudMessages && cloudMessages.length > 0) {
-        saveMessages(cloudMessages);
-        renderAdminMessagesTable();
-        updateInboxBadge();
       }
     }
 
@@ -6088,3 +5743,430 @@ async function syncDataFromSupabase() {
 
 
 
+
+
+// ===================================================================
+// PÁGINAS INDIVIDUALES DINÁMICAS: ARTÍCULO Y PROYECTO
+// ===================================================================
+
+function generateSlug(text) {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function getArticleBySlugOrId(identifier) {
+  if (!identifier) return null;
+  const cleanId = identifier.toString().trim().toLowerCase();
+  const articles = getStoredArticles();
+  return articles.find(a => {
+    if (!a) return false;
+    const matchId = a.id && a.id.toLowerCase() === cleanId;
+    const matchSlug = a.slug && a.slug.toLowerCase() === cleanId;
+    const matchGeneratedSlug = a.title && generateSlug(a.title) === cleanId;
+    return matchId || matchSlug || matchGeneratedSlug;
+  }) || null;
+}
+
+function getResourceBySlugOrId(identifier) {
+  if (!identifier) return null;
+  const cleanId = identifier.toString().trim().toLowerCase();
+  const resources = getStoredResources();
+  return resources.find(r => {
+    if (!r) return false;
+    const matchId = r.id && r.id.toLowerCase() === cleanId;
+    const matchSlug = r.slug && r.slug.toLowerCase() === cleanId;
+    const matchGeneratedSlug = r.title && generateSlug(r.title) === cleanId;
+    return matchId || matchSlug || matchGeneratedSlug;
+  }) || null;
+}
+
+async function initArticlePage() {
+  const container = document.getElementById('articleSingleContainer');
+  const loadingEl = document.getElementById('articleLoadingState');
+  const notFoundEl = document.getElementById('articleNotFoundContainer');
+  if (!container) return;
+
+  const params = new URLSearchParams(window.location.search);
+  let identifier = params.get('slug') || params.get('id');
+
+  if (!identifier && window.location.search.length > 1) {
+    const rawSearch = window.location.search.substring(1);
+    if (!rawSearch.includes('=')) {
+      identifier = decodeURIComponent(rawSearch);
+    }
+  }
+  if (!identifier && window.location.hash.length > 1) {
+    identifier = decodeURIComponent(window.location.hash.substring(1));
+  }
+
+  let post = getArticleBySlugOrId(identifier);
+
+  if (!post && window.supabaseDB) {
+    try {
+      const cloudArticles = await window.supabaseDB.getArticles();
+      if (cloudArticles && cloudArticles.length > 0) {
+        saveArticles(cloudArticles);
+        post = getArticleBySlugOrId(identifier);
+      }
+    } catch (e) {
+      console.warn('No se pudo consultar Supabase para el artículo:', e);
+    }
+  }
+
+  if (loadingEl) loadingEl.style.display = 'none';
+
+  if (!post || (post.publishStatus && post.publishStatus !== 'published')) {
+    if (notFoundEl) notFoundEl.style.display = 'block';
+    container.style.display = 'none';
+    document.title = 'Artículo no disponible • TecnoEduca';
+    return;
+  }
+
+  currentOpenArticleId = post.id;
+
+  document.title = `${post.title} • Blog Pedagógico | TecnoEduca`;
+  const metaDesc = document.getElementById('metaDescription');
+  if (metaDesc) metaDesc.setAttribute('content', post.excerpt || post.title);
+
+  const ogTitle = document.getElementById('ogTitle');
+  if (ogTitle) ogTitle.setAttribute('content', `${post.title} • TecnoEduca`);
+  const ogDesc = document.getElementById('ogDesc') || document.getElementById('ogDescription');
+  if (ogDesc) ogDesc.setAttribute('content', post.excerpt || post.title);
+  const ogUrl = document.getElementById('ogUrl');
+  if (ogUrl) ogUrl.setAttribute('content', window.location.href);
+
+  const bCat = document.getElementById('breadcrumbCategory');
+  if (bCat) bCat.textContent = post.category || 'General';
+  const bTitle = document.getElementById('breadcrumbTitle');
+  if (bTitle) bTitle.textContent = post.title;
+
+  const badgeEl = document.getElementById('articleCategoryBadge');
+  if (badgeEl) {
+    badgeEl.textContent = post.category;
+    badgeEl.className = `post-cat-badge ${getCategoryClass(post.category)}`;
+  }
+
+  const readTimeEl = document.getElementById('articleReadTime');
+  if (readTimeEl) readTimeEl.textContent = `⏱️ ${post.readTime || '4 min de lectura'}`;
+
+  const dateEl = document.getElementById('articleDate');
+  if (dateEl) dateEl.textContent = `• 📅 ${post.date}`;
+
+  const titleEl = document.getElementById('articleTitle');
+  if (titleEl) titleEl.textContent = post.title;
+
+  const excerptEl = document.getElementById('articleExcerpt');
+  if (excerptEl) {
+    if (post.excerpt) {
+      excerptEl.textContent = post.excerpt;
+      excerptEl.style.display = 'block';
+    } else {
+      excerptEl.style.display = 'none';
+    }
+  }
+
+  const bodyEl = document.getElementById('articleBody');
+  if (bodyEl) {
+    bodyEl.innerHTML = formatArticleBody(post.body || '');
+  }
+
+  const videoCont = document.getElementById('articleVideoContainer');
+  if (videoCont) {
+    if (post.videoUrl) {
+      videoCont.innerHTML = createYouTubePreviewHtml(post.videoUrl, post.title);
+      videoCont.style.display = 'block';
+    } else {
+      videoCont.innerHTML = '';
+      videoCont.style.display = 'none';
+    }
+  }
+
+  const downCont = document.getElementById('articleDownloadContainer');
+  if (downCont) {
+    if (post.downloadUrl) {
+      downCont.innerHTML = `
+        <div class="article-download-card">
+          <div class="download-info">
+            <span class="download-icon">📥</span>
+            <div>
+              <strong>Material y Guía Descargable en PDF</strong>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Ejercicios resueltos y apuntes para profundizar este tema.</p>
+            </div>
+          </div>
+          <a href="${post.downloadUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Descargar Guía</a>
+        </div>
+      `;
+      downCont.style.display = 'block';
+    } else {
+      downCont.innerHTML = '';
+      downCont.style.display = 'none';
+    }
+  }
+
+  renderArticleFeedbackUI(post.id);
+
+  const shareCont = document.getElementById('socialShareIcons');
+  if (shareCont) {
+    shareCont.innerHTML = generateShareIconsMarkup(post.title, window.location.href, window.location.href);
+  }
+
+  const waBtn = document.getElementById('articleWhatsAppBtn');
+  if (waBtn) {
+    const waMsg = `Hola Rosana! Leí tu artículo "${post.title}" en TecnoEduca y quiero coordinar una clase o hacerte una consulta.`;
+    waBtn.href = `https://wa.me/5492323523149?text=${encodeURIComponent(waMsg)}`;
+  }
+
+  renderArticleComments(post);
+  container.style.display = 'block';
+  renderRelatedArticles(post);
+}
+
+function renderRelatedArticles(currentPost) {
+  const container = document.getElementById('relatedArticlesGrid');
+  if (!container) return;
+
+  const all = getStoredArticles().filter(a => a.id !== currentPost.id && a.publishStatus === 'published');
+  if (all.length === 0) {
+    const sec = document.getElementById('relatedArticlesSection');
+    if (sec) sec.style.display = 'none';
+    return;
+  }
+
+  const sameCat = all.filter(a => a.category === currentPost.category);
+  const diffCat = all.filter(a => a.category !== currentPost.category);
+  const picked = [...sameCat, ...diffCat].slice(0, 3);
+
+  container.innerHTML = picked.map(post => {
+    const catClass = getCategoryClass(post.category);
+    const catEmoji = getCategoryEmoji(post.category);
+    const postSlug = post.slug || generateSlug(post.title);
+    return `
+      <article class="post-card" onclick="window.location.href='articulo.html?slug=${encodeURIComponent(postSlug)}'" title="Leer: ${escapeHTML(post.title)}" style="cursor:pointer;">
+        <div class="post-card-banner ${catClass}">
+          <span class="post-cat-pill">${escapeHTML(post.category)}</span>
+          <span class="post-thumb-icon">${catEmoji}</span>
+          <span class="post-read-pill">⏱️ ${escapeHTML(post.readTime || '4 min')}</span>
+        </div>
+        <div class="post-card-body">
+          <h3 class="post-card-title">${escapeHTML(post.title)}</h3>
+          <p class="post-card-excerpt">${escapeHTML(post.excerpt)}</p>
+          <div class="post-card-footer">
+            <span class="post-footer-date">📅 ${post.date}</span>
+            <span class="btn-read-post">Leer artículo &rarr;</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function initProjectPage() {
+  const container = document.getElementById('projectSingleContainer');
+  const loadingEl = document.getElementById('projectLoadingState');
+  const notFoundEl = document.getElementById('projectNotFoundContainer');
+  if (!container) return;
+
+  const params = new URLSearchParams(window.location.search);
+  let identifier = params.get('slug') || params.get('id');
+
+  if (!identifier && window.location.search.length > 1) {
+    const rawSearch = window.location.search.substring(1);
+    if (!rawSearch.includes('=')) {
+      identifier = decodeURIComponent(rawSearch);
+    }
+  }
+  if (!identifier && window.location.hash.length > 1) {
+    identifier = decodeURIComponent(window.location.hash.substring(1));
+  }
+
+  let res = getResourceBySlugOrId(identifier);
+
+  if (!res && window.supabaseDB) {
+    try {
+      const cloudResources = await window.supabaseDB.getResources();
+      if (cloudResources && cloudResources.length > 0) {
+        saveResources(cloudResources);
+        res = getResourceBySlugOrId(identifier);
+      }
+    } catch (e) {
+      console.warn('No se pudo consultar Supabase para el proyecto:', e);
+    }
+  }
+
+  if (loadingEl) loadingEl.style.display = 'none';
+
+  if (!res || res.publishStatus === 'draft') {
+    if (notFoundEl) notFoundEl.style.display = 'block';
+    container.style.display = 'none';
+    document.title = 'Recurso no disponible • TecnoEduca';
+    return;
+  }
+
+  document.title = `${res.title} • Portafolio & Recursos | TecnoEduca`;
+  const metaDesc = document.getElementById('metaDescription');
+  if (metaDesc) metaDesc.setAttribute('content', res.description || res.title);
+
+  const ogTitle = document.getElementById('ogTitle');
+  if (ogTitle) ogTitle.setAttribute('content', `${res.title} • TecnoEduca`);
+  const ogDesc = document.getElementById('ogDesc') || document.getElementById('ogDescription');
+  if (ogDesc) ogDesc.setAttribute('content', res.description || res.title);
+  const ogUrl = document.getElementById('ogUrl');
+  if (ogUrl) ogUrl.setAttribute('content', window.location.href);
+
+  const bCat = document.getElementById('breadcrumbCategory');
+  if (bCat) bCat.textContent = res.categoryLabel || res.category;
+  const bTitle = document.getElementById('breadcrumbTitle');
+  if (bTitle) bTitle.textContent = res.title;
+
+  const catBadge = document.getElementById('projectCategoryBadge');
+  if (catBadge) catBadge.textContent = res.categoryLabel || res.category;
+
+  const fmtPill = document.getElementById('projectFormatPill');
+  if (fmtPill) fmtPill.textContent = res.format || 'Digital';
+
+  const licPill = document.getElementById('projectLicensePill');
+  if (licPill) {
+    licPill.textContent = (res.licenseType === 'free' || (res.license && res.license.includes('100%'))) ? 'Libre y Gratuito' : 'Acceso Educativo';
+  }
+
+  const dateEl = document.getElementById('projectDate');
+  if (dateEl) dateEl.textContent = `• 📅 ${res.date || 'Reciente'}`;
+
+  const titleEl = document.getElementById('projectTitle');
+  if (titleEl) titleEl.textContent = res.title;
+
+  const descEl = document.getElementById('projectDescription');
+  if (descEl) descEl.innerHTML = formatArticleBody(res.description || '');
+
+  const softwareCont = document.getElementById('projectSoftwareTags');
+  if (softwareCont) {
+    const rawTools = res.software || 'Navegador Web / HTML5 / JS';
+    const chips = rawTools.split(/[/,]/).map(t => t.trim()).filter(Boolean);
+    softwareCont.innerHTML = chips.map(tool => `<span class="tech-chip">⚙️ ${escapeHTML(tool)}</span>`).join('');
+  }
+
+  const fmtDetail = document.getElementById('projectFormatDetail');
+  if (fmtDetail) fmtDetail.textContent = res.format || 'Aplicación interactiva y material digital';
+
+  const authCredit = document.getElementById('projectAuthorCredit');
+  if (authCredit) authCredit.textContent = res.authorCredit || 'Prof. Rosana (TecnoEduca)';
+
+  const licCard = document.getElementById('projectLicenseCard');
+  if (licCard && res.license) {
+    licCard.innerHTML = `✨ <strong>Licencia de Uso:</strong> ${escapeHTML(res.license)}`;
+  }
+
+  const vidCont = document.getElementById('projectVideoContainer');
+  if (vidCont) {
+    if (res.videoUrl) {
+      vidCont.innerHTML = createYouTubePreviewHtml(res.videoUrl, res.title);
+      vidCont.style.display = 'block';
+    } else {
+      vidCont.innerHTML = '';
+      vidCont.style.display = 'none';
+    }
+  }
+
+  const actBtn = document.getElementById('projectActionBtn');
+  if (actBtn) {
+    actBtn.href = res.url || '#';
+    if (res.fileType === 'download') {
+      actBtn.innerHTML = '<span>📥 Descargar Recurso Completo ↗</span>';
+    } else {
+      actBtn.innerHTML = '<span>🚀 Abrir Aplicación en Pantalla Completa ↗</span>';
+    }
+  }
+
+  const citText = document.getElementById('projectCitationText');
+  if (citText) {
+    citText.value = `Zunino, R. M. L. (${res.date || '2026'}). ${res.title}. TecnoEduca - Recursos y Portafolio Educativo. Enlace: ${window.location.href}`;
+  }
+
+  const shareCont = document.getElementById('projectShareIcons');
+  if (shareCont) {
+    shareCont.innerHTML = generateShareIconsMarkup(res.title, window.location.href, window.location.href);
+  }
+
+  const waBtn = document.getElementById('projectWhatsAppBtn');
+  if (waBtn) {
+    const waMsg = `Hola Rosana! Vi tu proyecto "${res.title}" en el banco de recursos de TecnoEduca y quiero hacerte una consulta.`;
+    waBtn.href = `https://wa.me/5492323523149?text=${encodeURIComponent(waMsg)}`;
+  }
+
+  container.style.display = 'block';
+  renderRelatedProjects(res);
+}
+
+function copyProjectCitation() {
+  const citText = document.getElementById('projectCitationText');
+  const statusEl = document.getElementById('citationCopyStatus');
+  if (!citText) return;
+
+  citText.select();
+  navigator.clipboard.writeText(citText.value).then(() => {
+    if (statusEl) {
+      statusEl.style.display = 'inline';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+    }
+  }).catch(() => {
+    document.execCommand('copy');
+    if (statusEl) {
+      statusEl.style.display = 'inline';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+    }
+  });
+}
+
+function renderRelatedProjects(currentRes) {
+  const container = document.getElementById('relatedProjectsGrid');
+  if (!container) return;
+
+  const all = getStoredResources().filter(r => r.id !== currentRes.id && r.publishStatus !== 'draft');
+  if (all.length === 0) {
+    const sec = document.getElementById('relatedProjectsSection');
+    if (sec) sec.style.display = 'none';
+    return;
+  }
+
+  const sameCat = all.filter(r => r.category === currentRes.category);
+  const diffCat = all.filter(r => r.category !== currentRes.category);
+  const picked = [...sameCat, ...diffCat].slice(0, 3);
+
+  container.innerHTML = picked.map(res => {
+    const resSlug = res.slug || generateSlug(res.title);
+    return `
+      <div class="resource-card" onclick="window.location.href='proyecto.html?slug=${encodeURIComponent(resSlug)}'" style="cursor:pointer;" title="Ver recurso: ${escapeHTML(res.title)}">
+        <div class="resource-card-banner" style="background:${res.previewColor || 'var(--primary-purple)'};">
+          <span class="resource-banner-icon">${res.previewIcon || '💡'}</span>
+          <span class="resource-cat-badge">${escapeHTML(res.categoryLabel || res.category)}</span>
+        </div>
+        <div class="resource-card-body">
+          <h4 class="resource-card-title">${escapeHTML(res.title)}</h4>
+          <p class="resource-card-desc">${escapeHTML(res.description || '')}</p>
+          <div class="resource-card-footer">
+            <span class="resource-software-chip">🛠️ ${escapeHTML(res.software || 'Digital')}</span>
+            <span class="btn-read-post">Ver ficha &rarr;</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Inicializar páginas individuales según URL al cargar
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('articleSingleContainer')) {
+    initArticlePage();
+  }
+  if (document.getElementById('projectSingleContainer')) {
+    initProjectPage();
+  }
+});

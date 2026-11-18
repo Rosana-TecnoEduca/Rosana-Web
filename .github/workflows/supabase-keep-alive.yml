@@ -1,0 +1,28 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # Se ejecuta cada 3 días a las 12:00 UTC (evita la suspensión por inactividad de 7 días de Supabase)
+    - cron: '0 12 */3 * *'
+  workflow_dispatch:
+    # Permite ejecutarlo manualmente desde la pestaña Actions en GitHub
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          echo "Enviando ping de actividad a Supabase TecnoEduca..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X GET \
+            "https://gzpbqtajawakaeufvxat.supabase.co/rest/v1/settings?select=id&limit=1" \
+            -H "apikey: sb_publishable_99seo5jqMjSqe9ua1aRTrA_UOOkFIQX" \
+            -H "Authorization: Bearer sb_publishable_99seo5jqMjSqe9ua1aRTrA_UOOkFIQX")
+          
+          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 204 ]; then
+            echo "✅ Ping exitoso (HTTP $RESPONSE) - El proyecto Supabase se mantiene activo y despierto."
+          else
+            echo "⚠️ Respuesta HTTP: $RESPONSE - Verificando conexión..."
+            exit 0
+          fi
+

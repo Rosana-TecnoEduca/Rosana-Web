@@ -39,7 +39,7 @@ El diseño visual está fielmente inspirado en los afiches promocionales institu
 ├── recursos.html         # Banco didáctico: Simuladores, apps interactivas, guías descargables y plantillas Canva.
 ├── styles.css            # Hoja de estilos CSS unificada (responsive, variables CSS, layout Grid/Flexbox).
 ├── script.js             # Lógica cliente: Carga dinámica de artículos, filtros, modales y validación de formularios.
-├── supabase-client.js    # Conexión cliente con la base de datos Supabase (consultas, artículos, biblioteca).
+├── supabase-client.js    # Acceso público de solo lectura y envío de consultas a Supabase.
 └── Recursos/             # Activos multimedia: Afiches promocionales, capturas, CV en PDF e imágenes.
 ```
 
@@ -53,8 +53,10 @@ El diseño visual está fielmente inspirado en los afiches promocionales institu
    - Botón directo de llamada a la acción en todas las secciones.
 
 2. **Formulario de Contacto Directo con Base de Datos**:
-   - Envía consultas en tiempo real directamente al **Panel Administrativo** a través de Supabase.
+   - Guarda las consultas en Supabase para que se reciban en el panel administrativo separado.
    - Campos de validación: Nombre, Apellido, Correo Electrónico, Teléfono/WhatsApp, Motivo y Mensaje.
+   - El sitio público no incluye acceso ni funciones de administración; los contenidos se gestionan desde el proyecto privado del panel.
+   - El blog, la biblioteca y los recursos comienzan vacíos; se mostrarán al cargar contenido real, sin registros de demostración locales.
 
 3. **División Alternada de Secciones**:
    - Contraste armónico entre bloques blancos (`section-white`) y fondos con degradé floral tenue (`section-alt`), evitando la monotonía de lectura.
@@ -72,7 +74,7 @@ El diseño visual está fielmente inspirado en los afiches promocionales institu
 - **HTML5**: Marcado semántico, accesible y estructurado.
 - **CSS3 Moderno**: Variables personalizadas (`:root`), Grid Layout, Flexbox, degradados lineales y *glassmorphism*.
 - **JavaScript (Vanilla ES6+)**: Sin librerías pesadas externas para garantizar máxima velocidad de carga.
-- **Supabase**: Backend serverless para persistencia de mensajes de contacto, artículos del blog y recursos.
+- **Supabase**: Backend serverless para consultar contenidos públicos y guardar mensajes de contacto.
 - **Google Fonts**: Tipografías *Nunito* (lectura moderna y limpia) y *Caveat* (acento manuscrito cálido).
 
 ---
