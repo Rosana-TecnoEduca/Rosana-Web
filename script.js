@@ -587,6 +587,7 @@ const DEFAULT_SETTINGS = {
   phoneClean: '5492323523149',
   linkedin: 'https://www.linkedin.com/in/rosana-mar%C3%ADa-luj%C3%A1n-zunino-b21224a4',
   github: 'https://github.com/marialujanzunino',
+  githubOrg: 'https://github.com/Rosana-TecnoEduca',
   cvUrl: '',
   canvaUrl: '',
   cvFileData: '',
@@ -716,8 +717,11 @@ function getStoredSettings() {
     if (parsed.github === 'https://github.com/rosanazunino') {
       parsed.github = 'https://github.com/marialujanzunino';
     }
-    if (parsed.youtube === 'https://www.youtube.com/@tecnoeduca') {
-      parsed.youtube = DEFAULT_SETTINGS.youtube;
+    if (!parsed.githubOrg || parsed.githubOrg === '' || parsed.githubOrg === 'https://github.com/marialujanzunino') {
+      parsed.githubOrg = 'https://github.com/Rosana-TecnoEduca';
+    }
+    if (!parsed.youtube || parsed.youtube.includes('@tecnoeduca') && !parsed.youtube.includes('TecnoEduca.Oficial')) {
+      parsed.youtube = 'https://www.youtube.com/@TecnoEduca.Oficial';
     }
     if (parsed.facebook === 'https://www.facebook.com/tecnoeduca') {
       parsed.facebook = DEFAULT_SETTINGS.facebook;
@@ -846,7 +850,564 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 11. Auto-selección y scroll para consultas dirigidas a contacto.html?asunto=...
   initURLContactParams();
+  initContactSubjectAutoMessage();
+  initContactFormAutofillMemory();
+
+  // 12. Inicializar Carruseles Dinámicos
+  initCarousels();
 });
+
+const SUBJECT_MESSAGE_TEMPLATES = {
+  'Matemática': '¡Hola Rosana! Quisiera consultar por clases particulares de Matemática (temas a preparar, días y horarios disponibles, y coordinar modalidad presencial u online).',
+  'Física': '¡Hola Rosana! Me gustaría consultar por clases de Física (temas a preparar, ejercicios de guía y coordinación de modalidad presencial u online).',
+  'Química': '¡Hola Rosana! Te consulto para coordinar clases particulares de Química (temas, ejercicios prácticos y disponibilidad de días y horarios).',
+  'Informática': '¡Hola Rosana! Quisiera consultar por clases y capacitación en Informática y herramientas digitales prácticas.',
+  'Ingreso Universitario': '¡Hola Rosana! Quisiera consultar sobre las clases de preparación y acompañamiento para el Ingreso Universitario (CBC / UTN / UNLu).',
+  'Curso de Canva para Docentes y Empresas': '¡Hola Rosana! Me interesa obtener más información y fechas del Curso de Canva (programa práctico, aranceles y modalidad).',
+  'Curso de IA para Educación': '¡Hola Rosana! Quisiera recibir información detallada sobre el Curso de Inteligencia Artificial aplicada a la Educación.',
+  'Diseño Web Profesional': '¡Hola Rosana! Quisiera solicitar asesoramiento y presupuesto para el desarrollo de un sitio web profesional.',
+  'Web Solidaria para ONGs': '¡Hola Rosana! Te contacto en representación de una Organización Sin Fines de Lucro / ONG para solicitar el beneficio solidario de Landing Page institucional.',
+  'Otro': '¡Hola Rosana! Te contacto para realizarte una consulta personalizada sobre...'
+};
+
+let isProgrammaticFocus = false;
+
+function goToContactStep(step, allowPreview = false) {
+  const step1 = document.getElementById('contactStep1');
+  const step2 = document.getElementById('contactStep2');
+  const successState = document.getElementById('contactSuccessState');
+  const ind1 = document.getElementById('stepIndicator1');
+  const ind2 = document.getElementById('stepIndicator2');
+  const ind3 = document.getElementById('stepIndicator3');
+  const num1 = document.getElementById('stepNum1');
+  const num2 = document.getElementById('stepNum2');
+  const num3 = document.getElementById('stepNum3');
+  const line1 = document.getElementById('stepIndicatorLine1');
+  const line2 = document.getElementById('stepIndicatorLine2');
+  const notice = document.getElementById('step1Notice');
+
+  if (step === 2) {
+    const nameEl = document.getElementById('contactName');
+    const surnameEl = document.getElementById('contactSurname');
+    const emailEl = document.getElementById('contactEmail');
+    const phoneEl = document.getElementById('contactPhone');
+
+    // Limpiar errores visuales
+    [nameEl, surnameEl, emailEl, phoneEl].forEach(el => {
+      if (el) el.classList.remove('input-error');
+    });
+    if (notice) notice.style.display = 'none';
+
+    // Si viene por el botón principal (no allowPreview), verificar si falta algo
+    if (!allowPreview) {
+      const name = nameEl ? nameEl.value.trim() : '';
+      const surname = surnameEl ? surnameEl.value.trim() : '';
+      const email = emailEl ? emailEl.value.trim() : '';
+      const phone = phoneEl ? phoneEl.value.trim() : '';
+
+      const missingFields = [];
+      if (!name) {
+        missingFields.push('Nombre');
+        if (nameEl) nameEl.classList.add('input-error');
+      }
+      if (!surname) {
+        missingFields.push('Apellido');
+        if (surnameEl) surnameEl.classList.add('input-error');
+      }
+      if (!email && !phone) {
+        missingFields.push('Correo o Teléfono/WhatsApp');
+        if (emailEl) emailEl.classList.add('input-error');
+        if (phoneEl) phoneEl.classList.add('input-error');
+      }
+
+      // Validar formato de email si fue ingresado
+      if (email && (!email.includes('@') || !email.includes('.'))) {
+        missingFields.push('un Correo Electrónico válido (ej: nombre@gmail.com)');
+        if (emailEl) emailEl.classList.add('input-error');
+      }
+
+      if (missingFields.length > 0) {
+        if (notice) {
+          notice.innerHTML = `<span>⚠️ Por favor completá tu <strong>${missingFields.join(' y ')}</strong> para poder avanzar a tu consulta.</span>`;
+          notice.style.display = 'block';
+        }
+        isProgrammaticFocus = true;
+        if (!name && nameEl) nameEl.focus({ preventScroll: true });
+        else if (!surname && surnameEl) surnameEl.focus({ preventScroll: true });
+        else if (!email && emailEl) emailEl.focus({ preventScroll: true });
+        else if (!phone && phoneEl) phoneEl.focus({ preventScroll: true });
+        setTimeout(() => { isProgrammaticFocus = false; }, 200);
+        return;
+      }
+
+      // Guardar en memoria local
+      try {
+        localStorage.setItem('tecnoeduca_user_contact', JSON.stringify({ name, surname, email, phone }));
+      } catch (e) {}
+    }
+
+    // Cambiar a Paso 2: Tu Consulta
+    if (step1) step1.style.display = 'none';
+    if (step2) step2.style.display = 'block';
+    if (successState) successState.style.display = 'none';
+
+    if (ind1) {
+      ind1.className = 'step-indicator-item active completed';
+      if (num1) num1.textContent = '✓';
+    }
+    if (line1) line1.classList.add('active');
+
+    if (ind2) {
+      ind2.className = 'step-indicator-item active';
+      if (num2) num2.textContent = '2';
+    }
+    if (line2) line2.classList.remove('active');
+
+    if (ind3) {
+      ind3.className = 'step-indicator-item';
+      if (num3) num3.textContent = '3';
+    }
+
+    handleContactSubjectChange();
+    generateContactAutoMessage();
+
+    // Solo alinear en móviles si quedó fuera de vista
+    if (window.innerWidth < 768) {
+      const formBox = document.querySelector('.contact-form-wrapper');
+      if (formBox) {
+        formBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  } else {
+    // Volver a Paso 1: Tus Datos
+    if (step2) step2.style.display = 'none';
+    if (successState) successState.style.display = 'none';
+    if (step1) step1.style.display = 'block';
+
+    if (ind1) {
+      ind1.className = 'step-indicator-item active';
+      if (num1) num1.textContent = '1';
+    }
+    if (line1) line1.classList.remove('active');
+
+    if (ind2) {
+      ind2.className = 'step-indicator-item';
+      if (num2) num2.textContent = '2';
+    }
+    if (line2) line2.classList.remove('active');
+
+    if (ind3) {
+      ind3.className = 'step-indicator-item';
+      if (num3) num3.textContent = '3';
+    }
+
+    if (notice) notice.style.display = 'none';
+  }
+}
+
+function handleContactSubjectChange() {
+  const subjectEl = document.getElementById('contactSubject');
+  const levelGroup = document.getElementById('academicLevelGroup');
+  const gradeGroup = document.getElementById('secondaryGradeGroup');
+  const entranceGroup = document.getElementById('universityEntranceGroup');
+  const modalityGroup = document.getElementById('classModalityGroup');
+  const modalityLabel = document.getElementById('contactModalityLabel');
+  const modalitySelect = document.getElementById('contactModality');
+  const courseGroup = document.getElementById('courseInfoGroup');
+  const webTypeGroup = document.getElementById('webTypeGroup');
+  const webTypeSelect = document.getElementById('contactWebType');
+  const ngoAlert = document.getElementById('ngoBenefitAlert');
+  const isNgoCheckbox = document.getElementById('contactIsNgo');
+  const notice2 = document.getElementById('step2Notice');
+
+  if (subjectEl) subjectEl.classList.remove('input-error');
+  if (notice2) notice2.style.display = 'none';
+
+  if (!subjectEl) return;
+  const val = subjectEl.value;
+
+  if (!val || val === '') {
+    // Estado inicial / placeholder: todo oculto
+    if (entranceGroup) entranceGroup.style.display = 'none';
+    if (levelGroup) levelGroup.style.display = 'none';
+    if (gradeGroup) gradeGroup.style.display = 'none';
+    if (modalityGroup) modalityGroup.style.display = 'none';
+    if (courseGroup) courseGroup.style.display = 'none';
+    if (webTypeGroup) webTypeGroup.style.display = 'none';
+    if (ngoAlert) ngoAlert.style.display = 'none';
+    generateContactAutoMessage();
+    return;
+  }
+
+  const isClass = ['Matemática', 'Física', 'Química', 'Informática'].includes(val);
+  const isEntrance = val === 'Ingreso Universitario';
+  const isWeb = val.includes('Diseño Web');
+  const isNgoWeb = val.includes('Web Solidaria');
+  const isCourse = val.includes('Canva') || val.includes('IA');
+
+  if (isEntrance) {
+    // Ingreso Universitario: No es secundario, es facultad/CBC/UTN/UNLu
+    if (levelGroup) levelGroup.style.display = 'none';
+    if (gradeGroup) gradeGroup.style.display = 'none';
+    if (courseGroup) courseGroup.style.display = 'none';
+    if (webTypeGroup) webTypeGroup.style.display = 'none';
+    if (ngoAlert) ngoAlert.style.display = 'none';
+    if (entranceGroup) entranceGroup.style.display = 'block';
+    if (modalityGroup) modalityGroup.style.display = 'block';
+
+    if (modalityLabel) modalityLabel.textContent = 'Modalidad de clase preferida';
+    if (modalitySelect) {
+      modalitySelect.innerHTML = `
+        <option value="Presencial en Luján" selected>📍 Presencial en Luján (Centro)</option>
+        <option value="Virtual / Online">💻 Virtual (Online en vivo con pizarra interactiva)</option>
+        <option value="A coordinar">🤝 A coordinar (Presencial u Online)</option>
+      `;
+    }
+    generateContactAutoMessage();
+  } else if (isClass) {
+    // Materias secundarias/universitarias
+    if (entranceGroup) entranceGroup.style.display = 'none';
+    if (courseGroup) courseGroup.style.display = 'none';
+    if (webTypeGroup) webTypeGroup.style.display = 'none';
+    if (ngoAlert) ngoAlert.style.display = 'none';
+    if (levelGroup) levelGroup.style.display = 'block';
+    if (modalityGroup) modalityGroup.style.display = 'block';
+
+    if (modalityLabel) modalityLabel.textContent = 'Modalidad de clase preferida';
+    if (modalitySelect) {
+      modalitySelect.innerHTML = `
+        <option value="Presencial en Luján" selected>📍 Presencial en Luján (Centro)</option>
+        <option value="Virtual / Online">💻 Virtual (Online en vivo con pizarra interactiva)</option>
+        <option value="A coordinar">🤝 A coordinar (Presencial u Online)</option>
+      `;
+    }
+    handleContactLevelChange();
+  } else if (isCourse) {
+    // Cursos de Inteligencia Artificial y Canva son virtuales
+    if (entranceGroup) entranceGroup.style.display = 'none';
+    if (levelGroup) levelGroup.style.display = 'none';
+    if (gradeGroup) gradeGroup.style.display = 'none';
+    if (modalityGroup) modalityGroup.style.display = 'none';
+    if (webTypeGroup) webTypeGroup.style.display = 'none';
+    if (ngoAlert) ngoAlert.style.display = 'none';
+    if (courseGroup) courseGroup.style.display = 'block';
+    generateContactAutoMessage();
+  } else if (isWeb || isNgoWeb) {
+    // Desarrollo web: solo modalidad "A coordinar"
+    if (entranceGroup) entranceGroup.style.display = 'none';
+    if (levelGroup) levelGroup.style.display = 'none';
+    if (gradeGroup) gradeGroup.style.display = 'none';
+    if (courseGroup) courseGroup.style.display = 'none';
+    if (webTypeGroup) webTypeGroup.style.display = 'block';
+    if (modalityGroup) modalityGroup.style.display = 'block';
+
+    if (modalityLabel) modalityLabel.textContent = 'Modalidad de trabajo / reuniones';
+    if (modalitySelect) {
+      modalitySelect.innerHTML = `
+        <option value="A coordinar" selected>🤝 A coordinar (Reunión virtual o presencial)</option>
+      `;
+    }
+
+    if (isNgoWeb) {
+      if (isNgoCheckbox) isNgoCheckbox.checked = true;
+      if (webTypeSelect) webTypeSelect.value = 'Landing Page';
+      if (ngoAlert) ngoAlert.style.display = 'block';
+    } else {
+      if (isNgoCheckbox && isNgoCheckbox.checked) {
+        if (webTypeSelect) webTypeSelect.value = 'Landing Page';
+        if (ngoAlert) ngoAlert.style.display = 'block';
+      } else {
+        if (ngoAlert) ngoAlert.style.display = 'none';
+      }
+    }
+    generateContactAutoMessage();
+  } else {
+    // Otro: Todo oculto
+    if (entranceGroup) entranceGroup.style.display = 'none';
+    if (levelGroup) levelGroup.style.display = 'none';
+    if (gradeGroup) gradeGroup.style.display = 'none';
+    if (modalityGroup) modalityGroup.style.display = 'none';
+    if (courseGroup) courseGroup.style.display = 'none';
+    if (webTypeGroup) webTypeGroup.style.display = 'none';
+    if (ngoAlert) ngoAlert.style.display = 'none';
+    generateContactAutoMessage();
+  }
+}
+
+function handleNgoToggle(isChecked) {
+  const ngoAlert = document.getElementById('ngoBenefitAlert');
+  const webTypeSelect = document.getElementById('contactWebType');
+  if (ngoAlert) ngoAlert.style.display = isChecked ? 'block' : 'none';
+  if (isChecked && webTypeSelect) {
+    webTypeSelect.value = 'Landing Page';
+  }
+  generateContactAutoMessage();
+}
+
+function handleWebTypeChange() {
+  const isNgoCheckbox = document.getElementById('contactIsNgo');
+  const webTypeSelect = document.getElementById('contactWebType');
+  if (isNgoCheckbox && isNgoCheckbox.checked && webTypeSelect && webTypeSelect.value !== 'Landing Page') {
+    webTypeSelect.value = 'Landing Page';
+    alert('El beneficio solidario para Organizaciones Sin Fines de Lucro aplica exclusivamente para el armado de una (1) Landing Page institucional.');
+  }
+  generateContactAutoMessage();
+}
+
+function handleContactLevelChange() {
+  const levelEl = document.getElementById('contactLevel');
+  const gradeGroup = document.getElementById('secondaryGradeGroup');
+
+  if (levelEl && gradeGroup) {
+    if (levelEl.value === 'Secundario') {
+      gradeGroup.style.display = 'block';
+    } else {
+      gradeGroup.style.display = 'none';
+    }
+  }
+  generateContactAutoMessage();
+}
+
+function generateContactAutoMessage() {
+  const nameEl = document.getElementById('contactName');
+  const surnameEl = document.getElementById('contactSurname');
+  const subjectEl = document.getElementById('contactSubject');
+  const levelEl = document.getElementById('contactLevel');
+  const gradeEl = document.getElementById('contactGrade');
+  const entranceEl = document.getElementById('contactEntranceSubject');
+  const modalityEl = document.getElementById('contactModality');
+  const webTypeEl = document.getElementById('contactWebType');
+  const isNgoCheckbox = document.getElementById('contactIsNgo');
+  const messageEl = document.getElementById('contactMessage');
+
+  if (!messageEl || !subjectEl) return;
+
+  const subject = subjectEl.value;
+  if (!subject || subject === '') {
+    messageEl.value = '';
+    messageEl.placeholder = 'Elegí qué te gustaría consultar arriba y tu mensaje se redactará automáticamente...';
+    return;
+  }
+
+  const name = nameEl ? nameEl.value.trim() : '';
+  const surname = surnameEl ? surnameEl.value.trim() : '';
+  const fullName = surname ? `${name} ${surname}`.trim() : name;
+  const greeting = fullName ? `¡Hola Rosana! Mi nombre es ${fullName}.` : '¡Hola Rosana!';
+
+  const isEntrance = subject === 'Ingreso Universitario';
+  const isClass = ['Matemática', 'Física', 'Química', 'Informática'].includes(subject);
+  const isWeb = subject.includes('Diseño Web');
+  const isNgoWeb = subject.includes('Web Solidaria') || (isWeb && isNgoCheckbox && isNgoCheckbox.checked);
+  const isCanva = subject.includes('Canva');
+  const isIA = subject.includes('IA');
+
+  let text = '';
+
+  if (isEntrance) {
+    const entranceSubject = entranceEl && entranceEl.value ? entranceEl.value : 'Matemática';
+    const modality = modalityEl ? modalityEl.value : 'Presencial en Luján';
+    text = `${greeting} Te consulto por clases particulares de preparación para el Ingreso Universitario en ${entranceSubject} en modalidad ${modality}.\n\nQuisiera coordinar contigo la disponibilidad de días y horarios para comenzar.`;
+  } else if (isClass) {
+    const level = levelEl ? levelEl.value : 'Secundario';
+    const grade = (level === 'Secundario' && gradeEl && gradeEl.value) ? ` (${gradeEl.value})` : '';
+    const modality = modalityEl ? modalityEl.value : 'Presencial en Luján';
+    text = `${greeting} Te consulto por clases particulares de ${subject} para nivel ${level}${grade} en modalidad ${modality}.\n\nQuisiera coordinar contigo la disponibilidad de días y horarios para comenzar.`;
+  } else if (isNgoWeb) {
+    text = `${greeting} Te contacto en representación de una Organización Sin Fines de Lucro / ONG para solicitar el armado bonificado de una Landing Page institucional (cubriendo nosotros únicamente los costos oficiales de dominio y hosting propio).\n\nQuisiéramos coordinar una reunión inicial para acreditar la entidad y comentarte los objetivos de nuestra labor comunitaria.`;
+  } else if (isWeb) {
+    const webType = webTypeEl ? webTypeEl.value : 'Landing Page';
+    text = `${greeting} Te contacto para solicitar asesoramiento y presupuesto para el desarrollo de un ${webType} en modalidad a coordinar.\n\nMe gustaría coordinar una charla inicial para conversar sobre los objetivos del proyecto.`;
+  } else if (isCanva) {
+    text = `${greeting} Quisiera solicitar información sobre el Curso de Canva para Docentes y Empresas en modalidad Virtual (programa práctico, aranceles y fechas de cursada).`;
+  } else if (isIA) {
+    text = `${greeting} Me interesa recibir información detallada sobre el Curso de Inteligencia Artificial (IA) en Educación en modalidad Virtual (temario, aranceles y propuesta formativa).`;
+  } else if (subject === 'Otro') {
+    text = `${greeting} Te contacto desde tu página web para realizarte una consulta sobre...\n`;
+  } else {
+    text = '';
+  }
+
+  messageEl.value = text;
+}
+
+function initContactSubjectAutoMessage() {
+  const select = document.getElementById('contactSubject');
+  if (select) {
+    handleContactSubjectChange();
+  }
+}
+
+function handleContactEmailAutoFill() {
+  const emailInput = document.getElementById('contactEmail');
+  const nameInput = document.getElementById('contactName');
+  const surnameInput = document.getElementById('contactSurname');
+  const phoneInput = document.getElementById('contactPhone');
+  if (!emailInput) return;
+
+  const emailVal = emailInput.value.trim().toLowerCase();
+  if (!emailVal) return;
+
+  // 1. Si existe perfil guardado en este navegador (de consultas anteriores)
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem('tecnoeduca_contact_profile') || 'null');
+  } catch (e) {}
+
+  if (saved && (saved.email && saved.email.toLowerCase() === emailVal || !saved.email)) {
+    if (nameInput && !nameInput.value && saved.name) nameInput.value = saved.name;
+    if (surnameInput && !surnameInput.value && saved.surname) surnameInput.value = saved.surname;
+    if (phoneInput && !phoneInput.value && saved.phone) phoneInput.value = saved.phone;
+    generateContactAutoMessage();
+    return;
+  }
+
+  // 2. Si el usuario está probando con correo de Rosana o TecnoEduca
+  if (emailVal.includes('tecnoeduca') || emailVal.includes('zunino')) {
+    const settings = getStoredSettings();
+    if (nameInput && !nameInput.value) nameInput.value = 'Rosana';
+    if (surnameInput && !surnameInput.value) surnameInput.value = 'Zunino';
+    if (phoneInput && !phoneInput.value) phoneInput.value = settings.whatsapp || '02323 52-3149';
+    generateContactAutoMessage();
+    return;
+  }
+
+  // 3. Extracción inteligente si el correo tiene formato nombre.apellido@... (ej: valentina.lopez@gmail.com)
+  const atIdx = emailVal.indexOf('@');
+  if (atIdx > 0) {
+    const localPart = emailVal.substring(0, atIdx);
+    const parts = localPart.split(/[\._\-]/).filter(p => p.length > 1 && !/\d/.test(p));
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    if (parts.length >= 2) {
+      if (nameInput && !nameInput.value) nameInput.value = cap(parts[0]);
+      if (surnameInput && !surnameInput.value) surnameInput.value = cap(parts[1]);
+      generateContactAutoMessage();
+    } else if (parts.length === 1 && nameInput && !nameInput.value) {
+      nameInput.value = cap(parts[0]);
+      generateContactAutoMessage();
+    }
+  }
+}
+
+function handleContactNameSplit() {
+  const nameInput = document.getElementById('contactName');
+  const surnameInput = document.getElementById('contactSurname');
+  if (!nameInput || !surnameInput) return;
+
+  const val = nameInput.value.trim();
+  // Si el usuario escribió o el navegador autocompletó "Nombre Apellido" en el campo Nombre
+  if (val.includes(' ') && !surnameInput.value) {
+    const parts = val.split(/\s+/);
+    if (parts.length >= 2) {
+      nameInput.value = parts[0];
+      surnameInput.value = parts.slice(1).join(' ');
+      generateContactAutoMessage();
+    }
+  }
+}
+
+function applyQuickAutofillProfile() {
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem('tecnoeduca_contact_profile') || 'null');
+  } catch (e) {}
+
+  if (!saved) {
+    const settings = getStoredSettings();
+    saved = {
+      name: 'Rosana',
+      surname: 'Zunino',
+      email: settings.email || 'tecnoeduca81@gmail.com',
+      phone: settings.whatsapp || '02323 52-3149'
+    };
+  }
+
+  const nameInput = document.getElementById('contactName');
+  const surnameInput = document.getElementById('contactSurname');
+  const emailInput = document.getElementById('contactEmail');
+  const phoneInput = document.getElementById('contactPhone');
+  const chip = document.getElementById('quickAutofillChip');
+
+  if (nameInput && saved.name) nameInput.value = saved.name;
+  if (surnameInput && saved.surname) surnameInput.value = saved.surname;
+  if (emailInput && saved.email) emailInput.value = saved.email;
+  if (phoneInput && saved.phone) phoneInput.value = saved.phone;
+
+  if (chip) chip.style.display = 'none';
+
+  generateContactAutoMessage();
+
+  const notice = document.getElementById('step1Notice');
+  if (notice) notice.style.display = 'none';
+}
+
+function handleFieldFocusSuggestions(input) {
+  if (isProgrammaticFocus) return;
+  if (!input) return;
+  // Solo sugerir si el usuario previamente guardó un perfil de contacto en su propio navegador
+  if (!input.value || !input.value.trim()) {
+    let saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem('tecnoeduca_contact_profile') || 'null');
+    } catch (e) {}
+
+    if (!saved) return; // Si no hay datos guardados previamente, dejar el campo limpio para que el usuario escriba
+
+    if (input.id === 'contactName' && saved.name) {
+      input.value = saved.name;
+    } else if (input.id === 'contactSurname' && saved.surname) {
+      input.value = saved.surname;
+    } else if (input.id === 'contactPhone' && saved.phone) {
+      input.value = saved.phone;
+    } else if (input.id === 'contactEmail' && saved.email) {
+      input.value = saved.email;
+    }
+
+    input.classList.remove('input-error');
+    const notice = document.getElementById('step1Notice');
+    if (notice) notice.style.display = 'none';
+
+    generateContactAutoMessage();
+  }
+}
+
+function initContactFormAutofillMemory() {
+
+  const nameInput = document.getElementById('contactName');
+  const surnameInput = document.getElementById('contactSurname');
+  const emailInput = document.getElementById('contactEmail');
+  const phoneInput = document.getElementById('contactPhone');
+  const notice = document.getElementById('step1Notice');
+  const chip = document.getElementById('quickAutofillChip');
+  const chipName = document.getElementById('quickAutofillName');
+
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem('tecnoeduca_contact_profile') || 'null');
+  } catch (e) {}
+
+  // Si existe perfil guardado en el navegador, mostrar el chip para completar con 1 clic
+  if (saved && (saved.name || saved.email)) {
+    if (chip && chipName) {
+      chipName.textContent = `${saved.name || ''} ${saved.surname || ''} (${saved.email || saved.phone || ''})`.trim();
+      chip.style.display = 'block';
+    }
+  }
+
+  [nameInput, surnameInput, emailInput, phoneInput].forEach(inp => {
+    if (inp) {
+      inp.addEventListener('input', () => {
+        inp.classList.remove('input-error');
+        if (notice && nameInput && nameInput.value.trim() && ((emailInput && emailInput.value.trim()) || (phoneInput && phoneInput.value.trim()))) {
+          notice.style.display = 'none';
+        }
+      });
+    }
+  });
+}
+
+function initCarousels() {
+  // Los carruseles ahora se gestionan con CSS nativo fluido en móvil y grilla simétrica en PC
+}
 
 function initURLContactParams() {
   if (!window.location.search) return;
@@ -1018,16 +1579,16 @@ function applySettingsToUI() {
   if (linkTG) linkTG.href = settings.telegram || 'https://t.me/tecnoeduca';
 
   const linkYT = document.getElementById('linkSocialYT');
-  if (linkYT) linkYT.href = settings.youtube || 'https://www.youtube.com/@tecnoeduca';
+  if (linkYT) linkYT.href = settings.youtube || 'https://www.youtube.com/@TecnoEduca.Oficial';
 
   const linkFB = document.getElementById('linkSocialFB');
-  if (linkFB) linkFB.href = settings.facebook || 'https://www.facebook.com/tecnoeduca';
+  if (linkFB) linkFB.href = settings.facebook || 'https://web.facebook.com/tecnoeduca81/';
 
   const linkIG = document.getElementById('linkSocialIG');
-  if (linkIG) linkIG.href = settings.instagram || 'https://www.instagram.com/tecnoeduca';
+  if (linkIG) linkIG.href = settings.instagram || 'https://www.instagram.com/tecnoeduca.oficial';
 
   const linkDC = document.getElementById('linkSocialDC');
-  if (linkDC) linkDC.href = settings.discord || 'https://discord.gg/tecnoeduca';
+  if (linkDC) linkDC.href = settings.discord || 'https://discord.gg/WBAU2sXrfE';
 
   // Enlaces directos en el footer
   const footerLinkWA = document.getElementById('footerLinkWA');
@@ -1050,13 +1611,13 @@ function applySettingsToUI() {
   if (footerLinkTG) footerLinkTG.href = settings.telegram || 'https://t.me/tecnoeduca';
 
   const footerLinkYT = document.getElementById('footerLinkYT');
-  if (footerLinkYT) footerLinkYT.href = settings.youtube || 'https://www.youtube.com/@tecnoeduca';
+  if (footerLinkYT) footerLinkYT.href = settings.youtube || 'https://www.youtube.com/@TecnoEduca.Oficial';
 
   const footerLinkFB = document.getElementById('footerLinkFB');
-  if (footerLinkFB) footerLinkFB.href = settings.facebook || 'https://www.facebook.com/tecnoeduca';
+  if (footerLinkFB) footerLinkFB.href = settings.facebook || 'https://web.facebook.com/tecnoeduca81/';
 
   const footerLinkIG = document.getElementById('footerLinkIG');
-  if (footerLinkIG) footerLinkIG.href = settings.instagram || 'https://www.instagram.com/tecnoeduca';
+  if (footerLinkIG) footerLinkIG.href = settings.instagram || 'https://www.instagram.com/tecnoeduca.oficial';
 
   const footerLinkTT = document.getElementById('footerLinkTT');
   if (footerLinkTT && settings.tiktok) footerLinkTT.href = settings.tiktok;
@@ -1079,63 +1640,79 @@ function applySettingsToUI() {
     }
   });
   document.querySelectorAll('.fs-ig').forEach(el => {
-    el.href = settings.instagram || 'https://www.instagram.com/tecnoeduca';
+    el.href = settings.instagram || 'https://www.instagram.com/tecnoeduca.oficial';
   });
   document.querySelectorAll('.fs-ig-personal').forEach(el => {
     el.href = settings.instagramPersonal || DEFAULT_SETTINGS.instagramPersonal;
   });
   document.querySelectorAll('.fs-tt').forEach(el => {
-    el.href = settings.tiktok || 'https://www.tiktok.com/@tecnoeduca';
+    el.href = settings.tiktok || 'https://www.tiktok.com/@tecnoeduca81';
   });
   document.querySelectorAll('.fs-li').forEach(el => {
     el.href = settings.linkedin || 'https://www.linkedin.com/in/rosana-mar%C3%ADa-luj%C3%A1n-zunino-b21224a4';
   });
   document.querySelectorAll('.fs-gh').forEach(el => {
-    el.href = settings.github || 'https://github.com/marialujanzunino';
+    el.href = settings.githubOrg || 'https://github.com/Rosana-TecnoEduca';
   });
   document.querySelectorAll('.fs-yt').forEach(el => {
-    el.href = settings.youtube || 'https://www.youtube.com/@tecnoeduca';
+    el.href = settings.youtube || 'https://www.youtube.com/@TecnoEduca.Oficial';
   });
   document.querySelectorAll('.fs-tg').forEach(el => {
     el.href = settings.telegram || 'https://t.me/tecnoeduca';
   });
-  document.querySelectorAll('.fs-th, .s-th').forEach(el => {
-    el.href = settings.threads || 'https://www.threads.net/@tecnoeduca';
+  document.querySelectorAll('.fs-th').forEach(el => {
+    el.href = settings.threads || 'https://www.threads.net/@tecnoeduca.oficial';
   });
   document.querySelectorAll('.fs-dc, .s-dc').forEach(el => {
-    el.href = settings.discord || 'https://discord.gg/tecnoeduca';
+    el.href = settings.discord || 'https://discord.gg/WBAU2sXrfE';
   });
-  document.querySelectorAll('.fs-fb, .s-fb').forEach(el => {
-    el.href = settings.facebook || 'https://www.facebook.com/tecnoeduca';
+  document.querySelectorAll('.fs-fb').forEach(el => {
+    el.href = settings.facebook || 'https://web.facebook.com/tecnoeduca81/';
   });
 
   // Tira de redes en pie de página (footer-social-icons / footer-social-strip)
+  // Personales (Columna 1)
+  const linkRosanaIG = document.getElementById('linkRosanaIG');
+  if (linkRosanaIG) linkRosanaIG.href = settings.instagramPersonal || 'https://www.instagram.com/rosana.zunino';
+  const linkRosanaThreads = document.getElementById('linkRosanaThreads');
+  if (linkRosanaThreads) linkRosanaThreads.href = settings.threadsPersonal || 'https://www.threads.net/@rosana.zunino';
+  const linkRosanaFB = document.getElementById('linkRosanaFB');
+  if (linkRosanaFB) linkRosanaFB.href = settings.facebookPersonal || 'https://web.facebook.com/rosanamlzunino/';
+  const linkRosanaDC = document.getElementById('linkRosanaDC');
+  if (linkRosanaDC) linkRosanaDC.href = settings.discordPersonal || 'https://discord.com';
+  const linkRosanaSubstack = document.getElementById('linkRosanaSubstack');
+  if (linkRosanaSubstack) linkRosanaSubstack.href = settings.substack || DEFAULT_SETTINGS.substack;
+
   document.querySelectorAll('.footer-s-icon.s-li').forEach(el => {
     el.href = settings.linkedin || 'https://www.linkedin.com/in/rosana-mar%C3%ADa-luj%C3%A1n-zunino-b21224a4';
   });
-  document.querySelectorAll('.footer-s-icon.s-gh').forEach(el => {
+  // GitHub: Org en TecnoEduca, Personal en Rosana
+  document.querySelectorAll('.footer-s-icon.s-gh-org').forEach(el => {
+    el.href = settings.githubOrg || 'https://github.com/Rosana-TecnoEduca';
+  });
+  document.querySelectorAll('.footer-s-icon.s-gh:not(.s-gh-org)').forEach(el => {
     el.href = settings.github || 'https://github.com/marialujanzunino';
   });
-  document.querySelectorAll('.footer-s-icon.s-ig').forEach(el => {
-    el.href = settings.instagram || 'https://www.instagram.com/tecnoeduca';
+  document.querySelectorAll('.footer-s-icon.s-ig:not(#linkRosanaIG)').forEach(el => {
+    el.href = settings.instagram || 'https://www.instagram.com/tecnoeduca.oficial';
   });
   document.querySelectorAll('.footer-s-icon.s-tt').forEach(el => {
-    el.href = settings.tiktok || 'https://www.tiktok.com/@tecnoeduca';
+    el.href = settings.tiktok || 'https://www.tiktok.com/@tecnoeduca81';
   });
   document.querySelectorAll('.footer-s-icon.s-yt').forEach(el => {
-    el.href = settings.youtube || 'https://www.youtube.com/@tecnoeduca';
+    el.href = settings.youtube || 'https://www.youtube.com/@TecnoEduca.Oficial';
   });
   document.querySelectorAll('.footer-s-icon.s-tg').forEach(el => {
     el.href = settings.telegram || 'https://t.me/tecnoeduca';
   });
-  document.querySelectorAll('.footer-s-icon.s-th').forEach(el => {
-    el.href = settings.threads || 'https://www.threads.net/@tecnoeduca';
+  document.querySelectorAll('.footer-s-icon.s-th:not(#linkRosanaThreads)').forEach(el => {
+    el.href = settings.threads || 'https://www.threads.net/@tecnoeduca.oficial';
   });
   document.querySelectorAll('.footer-s-icon.s-dc').forEach(el => {
-    el.href = settings.discord || 'https://discord.gg/tecnoeduca';
+    el.href = settings.discord || 'https://discord.gg/WBAU2sXrfE';
   });
-  document.querySelectorAll('.footer-s-icon.s-fb').forEach(el => {
-    el.href = settings.facebook || 'https://www.facebook.com/tecnoeduca';
+  document.querySelectorAll('.footer-s-icon.s-fb:not(#linkRosanaFB)').forEach(el => {
+    el.href = settings.facebook || 'https://web.facebook.com/tecnoeduca81/';
   });
   document.querySelectorAll('.footer-s-icon.s-mail').forEach(el => {
     el.href = `mailto:${settings.email || 'tecnoeduca81@gmail.com'}`;
@@ -1144,17 +1721,6 @@ function applySettingsToUI() {
     el.href = settings.substack || DEFAULT_SETTINGS.substack;
   });
 
-  // Enlaces específicos de perfil personal Rosana si existen
-  const linkRosanaIG = document.getElementById('linkRosanaIG');
-  if (linkRosanaIG) linkRosanaIG.href = settings.instagramPersonal || DEFAULT_SETTINGS.instagramPersonal;
-  const linkRosanaThreads = document.getElementById('linkRosanaThreads');
-  if (linkRosanaThreads) linkRosanaThreads.href = settings.threadsPersonal || DEFAULT_SETTINGS.threadsPersonal;
-  const linkRosanaFB = document.getElementById('linkRosanaFB');
-  if (linkRosanaFB) linkRosanaFB.href = settings.facebookPersonal || 'https://www.facebook.com/';
-  const linkRosanaDC = document.getElementById('linkRosanaDC');
-  if (linkRosanaDC) linkRosanaDC.href = settings.discordPersonal || 'https://discord.com';
-  const linkRosanaSubstack = document.getElementById('linkRosanaSubstack');
-  if (linkRosanaSubstack) linkRosanaSubstack.href = settings.substack || 'https://substack.com';
 }
 
 // ===================================================================
@@ -2195,7 +2761,7 @@ function createContactModalDOM() {
               <option value="Curso de Canva para Docentes y Empresas">🎨 Curso de Canva para Docentes & Empresas</option>
               <option value="Curso de IA para Educación">🤖 Curso de Inteligencia Artificial (IA) en Educación</option>
               <option value="Diseño Web Profesional">💻 Consulta por Diseño y Desarrollo Web</option>
-              <option value="Recursos Educativos">🎨 Banco de Recursos & Aplicaciones</option>
+              <option value="Web Solidaria para ONGs">🤝 Web Solidaria para Organizaciones Sin Fines de Lucro / ONG</option>
               <option value="Consulta General">💡 Otra consulta o propuesta pedagógica</option>
             </select>
           </div>
@@ -2274,38 +2840,115 @@ async function submitModalContactInquiry() {
 }
 
 async function submitContactInquiry() {
-  const nameEl = document.getElementById('contactName') || document.getElementById('contactFirstName');
-  const surnameEl = document.getElementById('contactSurname') || document.getElementById('contactLastName');
+  const nameEl = document.getElementById('contactName');
+  const surnameEl = document.getElementById('contactSurname');
   const emailEl = document.getElementById('contactEmail');
   const phoneEl = document.getElementById('contactPhone');
   const subjectEl = document.getElementById('contactSubject');
   const messageEl = document.getElementById('contactMessage');
+  const levelSelect = document.getElementById('contactLevel');
+  const gradeSelect = document.getElementById('contactGrade');
+  const modalitySelect = document.getElementById('contactModality');
+  const webTypeSelect = document.getElementById('contactWebType');
 
-  if (!nameEl || !emailEl || !messageEl) return;
-
-  const name = nameEl.value.trim();
+  const name = nameEl ? nameEl.value.trim() : '';
   const surname = surnameEl ? surnameEl.value.trim() : '';
   const fullName = surname ? `${name} ${surname}`.trim() : name;
-  const email = emailEl.value.trim();
+  const email = emailEl ? emailEl.value.trim() : '';
   const phone = phoneEl ? phoneEl.value.trim() : '';
-  const subject = subjectEl ? subjectEl.value.trim() : 'Consulta General';
-  const message = messageEl.value.trim();
+  const message = messageEl ? messageEl.value.trim() : '';
 
-  if (!name || !email || !message) return;
+  // Si falta el nombre o medio de contacto, volver al Paso 1 con aviso destacado
+  if (!name || (!email && !phone)) {
+    goToContactStep(1);
+    const notice = document.getElementById('step1Notice');
+    if (notice) {
+      notice.innerHTML = '<span>⚠️ Por favor completá tu <strong>Nombre</strong> y un <strong>Correo o Teléfono</strong> antes de enviar.</span>';
+      notice.style.display = 'flex';
+    }
+    return;
+  }
+
+  // Validar motivo seleccionado en Paso 2
+  let baseSubject = subjectEl && subjectEl.value ? subjectEl.value.trim() : '';
+  if (!baseSubject || baseSubject === '') {
+    if (subjectEl) {
+      subjectEl.classList.add('input-error');
+      isProgrammaticFocus = true;
+      subjectEl.focus({ preventScroll: true });
+      setTimeout(() => { isProgrammaticFocus = false; }, 200);
+    }
+    const notice2 = document.getElementById('step2Notice');
+    if (notice2) {
+      notice2.innerHTML = '<span>⚠️ Por favor elegí qué te gustaría consultar arriba para poder enviar tu mensaje.</span>';
+      notice2.style.display = 'block';
+    }
+    return;
+  }
+
+  if (!message) {
+    if (messageEl) {
+      messageEl.focus({ preventScroll: true });
+    }
+    const notice2 = document.getElementById('step2Notice');
+    if (notice2) {
+      notice2.innerHTML = '<span>⚠️ Por favor redactá o completá tu mensaje antes de enviar.</span>';
+      notice2.style.display = 'block';
+    }
+    return;
+  }
+
+  // Correo de respaldo si solo dejó WhatsApp
+  const contactEmail = email || (phone ? `${phone.replace(/\D/g, '')}@whatsapp.contacto` : 'contacto@tecnoeduca.com');
+
+  // Asunto estructurado con nivel, año y modalidad
+  let fullSubject = baseSubject;
+
+  const entranceSelect = document.getElementById('contactEntranceSubject');
+  const isEntrance = baseSubject === 'Ingreso Universitario';
+  const isClass = ['Matemática', 'Física', 'Química', 'Informática'].includes(baseSubject);
+  const isNgoWeb = baseSubject.includes('Web Solidaria') || (baseSubject.includes('Diseño Web') && document.getElementById('contactIsNgo')?.checked);
+  const isWeb = baseSubject.includes('Diseño Web');
+
+  if (isEntrance) {
+    const entranceMateria = entranceSelect && entranceSelect.value ? entranceSelect.value : 'Matemática';
+    fullSubject = `Ingreso Universitario — ${entranceMateria}`;
+    if (modalitySelect && modalitySelect.value) {
+      fullSubject += ` [${modalitySelect.value}]`;
+    }
+  } else if (isClass && levelSelect) {
+    const levelVal = levelSelect.value;
+    if (levelVal === 'Secundario' && gradeSelect && gradeSelect.value) {
+      fullSubject += ` — Secundario (${gradeSelect.value})`;
+    } else if (levelVal) {
+      fullSubject += ` — ${levelVal}`;
+    }
+    if (modalitySelect && modalitySelect.value) {
+      fullSubject += ` [${modalitySelect.value}]`;
+    }
+  } else if (isNgoWeb) {
+    fullSubject = `Diseño Web Solidario (ONG) — Landing Page [A coordinar]`;
+  } else if (isWeb && webTypeSelect) {
+    fullSubject = `Diseño Web — ${webTypeSelect.value} [A coordinar]`;
+  }
 
   const newInquiry = {
     id: 'msg-' + Date.now(),
     name: fullName,
-    email: email,
+    email: contactEmail,
     phone: phone || 'No informado',
-    subject: subject,
+    subject: fullSubject,
     message: message,
     date: new Date().toLocaleString('es-AR'),
     read: false
   };
 
-  const submitButton = document.querySelector('#mainContactForm button[type="submit"]');
-  if (submitButton) submitButton.disabled = true;
+  const submitButton = document.querySelector('.btn-submit-form');
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span>⏳ Enviando mensaje...</span>';
+  }
+
   try {
     if (!window.supabaseDB || typeof window.supabaseDB.insertMessage !== 'function') {
       throw new Error('El servicio de mensajes no está disponible.');
@@ -2313,20 +2956,123 @@ async function submitContactInquiry() {
     await window.supabaseDB.insertMessage(newInquiry);
   } catch (err) {
     console.error('No se pudo enviar la consulta de contacto:', err);
-    alert('No se pudo enviar tu consulta. Tus datos no se guardaron; intentá nuevamente más tarde.');
+    alert('No se pudo enviar tu consulta. Por favor verificá tu conexión o intentá nuevamente.');
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.innerHTML = '<span>✉️ Enviar Mensaje a Rosana</span>';
+    }
     return;
-  } finally {
-    if (submitButton) submitButton.disabled = false;
   }
 
-  const alertEl = document.getElementById('formSuccessAlert');
-  if (alertEl) {
-    alertEl.style.display = 'block';
-    setTimeout(() => { alertEl.style.display = 'none'; }, 6000);
+  // 1. Mostrar pantalla de éxito y activar Paso 3 en el seguimiento superior
+  const successState = document.getElementById('contactSuccessState');
+  const stepIndicators = document.getElementById('stepIndicatorsWrapper');
+  const step1 = document.getElementById('contactStep1');
+  const step2 = document.getElementById('contactStep2');
+  const senderNameEl = document.getElementById('successSenderName');
+
+  const ind1 = document.getElementById('stepIndicator1');
+  const ind2 = document.getElementById('stepIndicator2');
+  const ind3 = document.getElementById('stepIndicator3');
+  const num1 = document.getElementById('stepNum1');
+  const num2 = document.getElementById('stepNum2');
+  const num3 = document.getElementById('stepNum3');
+  const line1 = document.getElementById('stepIndicatorLine1');
+  const line2 = document.getElementById('stepIndicatorLine2');
+
+  if (senderNameEl) {
+    senderNameEl.textContent = fullName || 'estimado/a';
   }
 
+  if (step1) step1.style.display = 'none';
+  if (step2) step2.style.display = 'none';
+  if (successState) {
+    successState.style.display = 'block';
+  }
+
+  // Mantener visible el seguimiento y marcar Paso 3: Confirmación activo
+  if (stepIndicators) stepIndicators.style.display = 'flex';
+
+  if (ind1) {
+    ind1.className = 'step-indicator-item active completed';
+    if (num1) num1.textContent = '✓';
+  }
+  if (line1) line1.classList.add('active');
+
+  if (ind2) {
+    ind2.className = 'step-indicator-item active completed';
+    if (num2) num2.textContent = '✓';
+  }
+  if (line2) line2.classList.add('active');
+
+  if (ind3) {
+    ind3.className = 'step-indicator-item active completed';
+    if (num3) num3.textContent = '✓';
+  }
+
+  // 2. Vaciar completamente los campos de ambos pasos
   const mainForm = document.getElementById('mainContactForm');
   if (mainForm) mainForm.reset();
+  if (nameEl) nameEl.value = '';
+  if (surnameEl) surnameEl.value = '';
+  if (emailEl) emailEl.value = '';
+  if (phoneEl) phoneEl.value = '';
+  if (messageEl) messageEl.value = '';
+
+  // Resetear estados condicionales y checkbox ONG
+  const ngoCheckbox = document.getElementById('contactIsNgo');
+  if (ngoCheckbox) ngoCheckbox.checked = false;
+  const ngoAlert = document.getElementById('ngoBenefitAlert');
+  if (ngoAlert) ngoAlert.style.display = 'none';
+  const entranceGroup = document.getElementById('universityEntranceGroup');
+  if (entranceGroup) entranceGroup.style.display = 'none';
+
+  // Limpiar posibles alertas y estilos de error
+  [nameEl, surnameEl, emailEl, phoneEl].forEach(el => {
+    if (el) el.classList.remove('input-error');
+  });
+
+  // 3. Guardar perfil permanente para autocompletado futuro, pero limpiar la sesión actual del formulario
+  try {
+    localStorage.setItem('tecnoeduca_contact_profile', JSON.stringify({ name, surname, email, phone }));
+    localStorage.removeItem('tecnoeduca_user_contact');
+  } catch (e) {}
+
+  // 4. Dejar el botón de envío reestablecido y listo
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.innerHTML = '<span>✉️ Enviar Mensaje a Rosana</span>';
+    submitButton.style.opacity = '1';
+  }
+}
+
+function resetContactFormToStep1() {
+  const mainForm = document.getElementById('mainContactForm');
+  if (mainForm) mainForm.reset();
+
+  // Dejar campos vacíos listos para una nueva consulta
+  ['contactName', 'contactSurname', 'contactEmail', 'contactPhone', 'contactMessage'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = '';
+      el.classList.remove('input-error');
+    }
+  });
+
+  const notice = document.getElementById('step1Notice');
+  if (notice) notice.style.display = 'none';
+
+  const notice2 = document.getElementById('step2Notice');
+  if (notice2) notice2.style.display = 'none';
+
+  const subjectEl = document.getElementById('contactSubject');
+  if (subjectEl) {
+    subjectEl.value = '';
+    subjectEl.classList.remove('input-error');
+  }
+  handleContactSubjectChange();
+
+  goToContactStep(1);
 }
 
 // ===================================================================
@@ -6173,3 +6919,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initProjectPage();
   }
 });
+
