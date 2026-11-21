@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
   <!-- Estilos principales -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20261120m">
   <!-- Tracker de Métricas y Estadísticas (Metricool) -->
   <script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"321e4ba3fbc2b52af15060b552674720"})});</script>
 </head>
@@ -88,131 +88,289 @@
     </section>
 
     <!-- ================= Panel de Contacto Principal ================= -->
-    <section class="section contact-form-section section-white" style="padding: 4rem 0;">
+    <section class="section contact-form-section section-white" style="padding: 2.2rem 0 3.5rem;">
       <div class="container">
         <div class="contact-box-grid">
           
-          <!-- Columna Izquierda: Información de Contacto & Canales -->
+          <!-- Columna Izquierda: Información de Contacto & Canales Directos -->
           <div class="contact-info-panel">
-            <span class="section-tag">Canales Directos</span>
-            <h3 class="contact-panel-title">Escribime tu consulta o proyecto <span class="heart-purple">♡</span></h3>
-            <p class="contact-panel-desc">
-              Completá el formulario con tus datos y tu mensaje, ya sea para coordinar clases particulares o para conversar sobre el diseño y desarrollo de tu sitio web profesional.
-            </p>
+            <div class="contact-info-top">
+              <span class="section-tag">Atención Personalizada</span>
+              <h3 class="contact-panel-title">Escribime tu consulta o proyecto <span class="heart-purple">♡</span></h3>
+              <p class="contact-panel-desc" style="margin-bottom: 1.35rem;">
+                Completá el formulario con tus datos básicos para coordinar tus clases particulares o conversar sobre tu nuevo sitio web.
+              </p>
 
-            <div class="contact-info-list">
-              <div class="c-info-item">
-                <div class="c-icon">💻</div>
-                <div>
-                  <strong>Desarrollo & Sitios Web:</strong>
-                  <span>Diseño a medida para profesionales, instituciones y emprendimientos</span>
-                </div>
-              </div>
-
-              <div class="c-info-item">
-                <div class="c-icon">📐</div>
-                <div>
-                  <strong>Clases Particulares:</strong>
-                  <span>Matemática, Física y Química (Presencial en Luján y Online)</span>
-                </div>
-              </div>
-
-              <div class="c-info-item">
-                <div class="c-icon">📝</div>
-                <div>
-                  <strong>Formulario Directo:</strong>
-                  <span>Completá tus datos a la derecha y te respondo en el día</span>
-                </div>
-              </div>
-
-              <div class="c-info-item">
-                <div class="c-icon">📍</div>
-                <div>
-                  <strong>Ubicación:</strong>
-                  <span>Luján, Provincia de Buenos Aires, Argentina</span>
-                </div>
-              </div>
-
-              <div class="c-info-item">
-                <div class="c-icon">📬</div>
-                <div>
-                  <strong>Bandeja Docente:</strong>
-                  <span>Recepción directa en el panel docente independiente.</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="response-pledge">
-              <span>⚡ <strong>Respuesta rápida:</strong> Recibís contestación en el día (generalmente en menos de 24 horas hábiles).</span>
-            </div>
-          </div>
-
-          <!-- Columna Derecha: Formulario de Contacto Clásico -->
-          <div class="contact-form-wrapper">
-            <h3 class="form-title">Enviame tu mensaje</h3>
-
-            <form id="mainContactForm" onsubmit="event.preventDefault(); submitContactInquiry();" class="inquiry-form">
-              <div class="form-row-2">
-                <div class="form-group">
-                  <label for="contactName">Nombre *</label>
-                  <input type="text" id="contactName" class="form-control" placeholder="Ej: Valentina" required>
-                </div>
-                <div class="form-group">
-                  <label for="contactSurname">Apellido *</label>
-                  <input type="text" id="contactSurname" class="form-control" placeholder="Ej: López" required>
-                </div>
-              </div>
-
-              <div class="form-row-2">
-                <div class="form-group">
-                  <label for="contactEmail">Correo Electrónico *</label>
-                  <input type="email" id="contactEmail" class="form-control" placeholder="ej: tu-correo@gmail.com" required>
-                </div>
-                <div class="form-group">
-                  <label for="contactPhone">Teléfono / WhatsApp de contacto</label>
-                  <input type="tel" id="contactPhone" class="form-control" placeholder="Ej: 011 1234-5678">
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="contactSubject">Materia o Motivo de Consulta *</label>
-                <select id="contactSubject" class="form-control" required>
-                  <option value="Matemática">📐 Matemática (Secundario / Terciario / Universitario)</option>
-                  <option value="Física">⚛️ Física (Secundario / Terciario / Universitario)</option>
-                  <option value="Química">🧪 Química (Secundario / Terciario / Universitario)</option>
-                  <option value="Ingreso Universitario">🎓 Ingreso Universitario / CBC / UTN</option>
-                  <option value="Curso de Canva para Docentes y Empresas">🎨 Curso de Canva para Docentes & Empresas</option>
-                  <option value="Curso de IA para Educación">🤖 Curso de Inteligencia Artificial (IA) en Educación</option>
-                  <option value="Diseño Web Profesional">💻 Consulta por Diseño y Desarrollo Web</option>
-                  <option value="Recursos Educativos">🎨 Banco de Recursos & Aplicaciones Interactivas</option>
-                  <option value="Otro">💡 Otra consulta o propuesta pedagógica</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="contactMessage">Tu Consulta o Mensaje *</label>
-                <textarea id="contactMessage" class="form-control" rows="5" placeholder="Contame qué temas necesitás preparar, fecha de examen o si preferís modalidad presencial u online..." required></textarea>
-              </div>
-
-              <div class="form-privacy-note">
-                <span>🔒 Tus datos personales son 100% confidenciales y se registran en el panel docente para responderte.</span>
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-submit-form">
-                <span>✉️ Enviar Mensaje a Rosana</span>
-                <span class="btn-arrow">&rarr;</span>
-              </button>
-
-              <div id="formSuccessAlert" class="alert-success-msg" style="display:none;">
-                <div style="display: flex; align-items: flex-start; gap: 0.85rem;">
-                  <span style="font-size: 1.8rem; line-height: 1;">💌</span>
+              <div class="contact-info-list" style="margin-bottom: 1.35rem;">
+                <div class="c-info-item">
+                  <div class="c-icon">📐</div>
                   <div>
-                    <strong style="display: block; font-size: 1.05rem; margin-bottom: 0.3rem; color: #065F46;">¡Muchas gracias por enviar tu mensaje!</strong>
-                    <span style="display: block; line-height: 1.5;">Hemos recibido tu consulta con éxito. A la brevedad me estaré comunicando con usted para responder todas sus dudas y coordinar los detalles.</span>
+                    <strong>Clases Particulares &amp; Ingreso:</strong>
+                    <span>Matemática, Física y Química (Presencial en Luján y Online)</span>
+                  </div>
+                </div>
+
+                <div class="c-info-item">
+                  <div class="c-icon">💻</div>
+                  <div>
+                    <strong>Diseño Web &amp; Cursos:</strong>
+                    <span>Landing pages, sitios web profesionales y capacitaciones interactivas</span>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div class="contact-info-bottom" style="margin-top: auto; padding-top: 1rem;">
+              <div class="response-pledge">
+                <span>⚡ <strong>Respuesta rápida:</strong> Recibís contestación en el día (generalmente en menos de 24 horas hábiles).</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Formulario de Contacto en 2 Pasos -->
+          <div class="contact-form-wrapper">
+
+            <!-- Formulario Contenedor -->
+            <form id="mainContactForm" action="#" method="post" autocomplete="on" onsubmit="event.preventDefault(); goToContactStep(2);" class="inquiry-form" novalidate>
+
+              <!-- Indicador Visual de 3 Pasos (Seguimiento del Formulario) -->
+              <div class="form-steps-indicator" id="stepIndicatorsWrapper" aria-label="Progreso del formulario">
+                <div class="step-indicator-item active" id="stepIndicator1" onclick="goToContactStep(1)" title="Paso 1: Tus Datos">
+                  <span class="step-num" id="stepNum1">1</span>
+                  <span class="step-label">Tus Datos</span>
+                </div>
+                <div class="step-indicator-line" id="stepIndicatorLine1"></div>
+                <div class="step-indicator-item" id="stepIndicator2" onclick="goToContactStep(2, true)" title="Paso 2: Tu Consulta">
+                  <span class="step-num" id="stepNum2">2</span>
+                  <span class="step-label">Tu Consulta</span>
+                </div>
+                <div class="step-indicator-line" id="stepIndicatorLine2"></div>
+                <div class="step-indicator-item" id="stepIndicator3" title="Paso 3: Confirmación">
+                  <span class="step-num" id="stepNum3">3</span>
+                  <span class="step-label">Confirmación</span>
+                </div>
+              </div>
+
+              <!-- ===== PANTALLA DE CONFIRMACIÓN DE ÉXITO (Sin saltos bruscos) ===== -->
+              <div id="contactSuccessState" class="contact-step-content" style="display: none; padding: 2.2rem 1.2rem; text-align: center;">
+                <div style="width: 76px; height: 76px; margin: 0 auto 1.25rem; background: #ECFDF5; border: 2.5px solid #6EE7B7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.3rem; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);">
+                  💌
+                </div>
+                <h3 style="color: #065F46; font-size: 1.55rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.01em;">
+                  ¡Consulta enviada con éxito!
+                </h3>
+                <p style="color: var(--text-muted); font-size: 0.98rem; max-width: 440px; margin: 0 auto 1.35rem; line-height: 1.6;">
+                  Muchas gracias, <strong id="successSenderName" style="color: var(--primary-purple-dark);"></strong>. Tu mensaje ya fue registrado en el panel docente de Rosana. Te responderé a la brevedad para coordinar todos los detalles.
+                </p>
+                <div style="background: #FAF7FC; border-left: 4px solid var(--primary-purple); padding: 0.85rem 1.2rem; border-radius: 8px; font-size: 0.88rem; color: var(--primary-purple-dark); max-width: 440px; margin: 0 auto 1.8rem; text-align: left; line-height: 1.45;">
+                  ⚡ <strong>Atención directa:</strong> Revisá tu casilla de correo o WhatsApp en las próximas horas para recibir la respuesta.
+                </div>
+                <div>
+                  <button type="button" class="btn btn-primary" onclick="resetContactFormToStep1()" style="padding: 0.85rem 1.8rem; font-size: 1rem; margin: 0 auto; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <span>✨ Enviar otra consulta o volver al formulario</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ===== FORMULARIO 1: Datos Personales Básicos ===== -->
+              <div id="contactStep1" class="contact-step-content">
+                <h3 class="form-title" style="margin-bottom: 0.35rem;">Paso 1: Tus Datos de Contacto</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                  Completá tus datos básicos para que Rosana pueda responderte en el día.
+                </p>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="contactName">Nombre *</label>
+                    <input type="text" id="contactName" name="name" class="form-control" placeholder="Ej: Valentina" autocomplete="given-name" required onfocus="handleFieldFocusSuggestions(this)" onclick="handleFieldFocusSuggestions(this)" oninput="handleContactNameSplit(); generateContactAutoMessage();">
+                  </div>
+                  <div class="form-group">
+                    <label for="contactSurname">Apellido *</label>
+                    <input type="text" id="contactSurname" name="surname" class="form-control" placeholder="Ej: López" autocomplete="family-name" required onfocus="handleFieldFocusSuggestions(this)" onclick="handleFieldFocusSuggestions(this)" oninput="generateContactAutoMessage()">
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label for="contactEmail">Correo Electrónico *</label>
+                    <input type="email" id="contactEmail" name="email" class="form-control" placeholder="ej: tu-correo@gmail.com" autocomplete="email" required onfocus="handleFieldFocusSuggestions(this)" onclick="handleFieldFocusSuggestions(this)" oninput="handleContactEmailAutoFill(); generateContactAutoMessage();" onchange="handleContactEmailAutoFill();">
+                  </div>
+                  <div class="form-group">
+                    <label for="contactPhone">Teléfono / WhatsApp *</label>
+                    <input type="tel" id="contactPhone" name="phone" class="form-control" placeholder="Ej: 011 1234-5678" autocomplete="tel" required onfocus="handleFieldFocusSuggestions(this)" onclick="handleFieldFocusSuggestions(this)" oninput="generateContactAutoMessage()">
+                  </div>
+                </div>
+
+                <div class="form-privacy-note" style="margin-top: 0.4rem; margin-bottom: 1.2rem;">
+                  <span>🔒 Tus datos son 100% confidenciales y se usan solo para responderte.</span>
+                </div>
+
+                <!-- Alerta visual suave si falta completar algo (justo sobre el botón, sin saltos) -->
+                <div id="step1Notice" class="step-error-banner" style="display:none; margin-bottom: 0.9rem;" role="alert"></div>
+
+                <button type="button" id="btnGoToStep2" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.95rem 1.4rem; font-size: 1.05rem;" onclick="goToContactStep(2)">
+                  <span>Continuar a mi Consulta 👉</span>
+                </button>
+
+                <div style="text-align: center; margin-top: 0.9rem;">
+                  <button type="button" onclick="goToContactStep(2, true)" style="background: none; border: none; color: #276E7B; font-size: 0.88rem; cursor: pointer; text-decoration: underline; font-weight: 600;">
+                    O ver opciones de consulta primero →
+                  </button>
+                </div>
+              </div>
+
+              <!-- ===== FORMULARIO 2: Motivo, Opciones y Mensaje Auto-generado ===== -->
+              <div id="contactStep2" class="contact-step-content" style="display: none;">
+                <h3 class="form-title" style="margin-bottom: 0.35rem;">Paso 2: ¿Qué necesitás consultar?</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                  Elegí tus opciones y tu mensaje se redactará automáticamente.
+                </p>
+
+                <!-- Motivo Principal (Con placeholder inicial) -->
+                <div class="form-group">
+                  <label for="contactSubject">Motivo o Área de Consulta *</label>
+                  <select id="contactSubject" class="form-control" required onchange="handleContactSubjectChange()">
+                    <option value="" disabled selected hidden>— Elegí qué te gustaría consultar —</option>
+                    <option value="Matemática">📐 Clases de Matemática</option>
+                    <option value="Física">⚛️ Clases de Física</option>
+                    <option value="Química">🧪 Clases de Química</option>
+                    <option value="Informática">💻 Informática &amp; Herramientas Digitales</option>
+                    <option value="Ingreso Universitario">🎓 Ingreso Universitario / CBC / UTN / UNLu</option>
+                    <option value="Curso de Canva para Docentes y Empresas">🎨 Curso de Canva para Docentes &amp; Empresas</option>
+                    <option value="Curso de IA para Educación">🤖 Curso de Inteligencia Artificial (IA) en Educación</option>
+                    <option value="Diseño Web Profesional">💻 Consulta por Diseño y Desarrollo Web</option>
+                    <option value="Web Solidaria para ONGs">🤝 Web Solidaria para Organizaciones Sin Fines de Lucro / ONG</option>
+                    <option value="Otro">💡 Otra propuesta o consulta personalizada</option>
+                  </select>
+                </div>
+
+                <!-- Sub-opción condicional: Materia de Ingreso Universitario (solo si elige Ingreso Universitario) -->
+                <div id="universityEntranceGroup" class="form-group" style="display: none;">
+                  <label for="contactEntranceSubject">Materia de Ingreso a Preparar *</label>
+                  <select id="contactEntranceSubject" class="form-control" onchange="generateContactAutoMessage()">
+                    <option value="Matemática (Álgebra / Análisis Matemático)" selected>📐 Matemática (Álgebra / Análisis Matemático / CBC / UTN / UNLu)</option>
+                    <option value="Física (Física CBC / Biofísica)">⚛️ Física (Física CBC / Biofísica / UTN / UNLu)</option>
+                    <option value="Química (Química CBC / General)">🧪 Química (Química CBC / Química General / UTN / UNLu)</option>
+                    <option value="Matemática y Física (Ambas)">📐⚛️ Matemática y Física (Ambas materias)</option>
+                    <option value="Matemática y Química (Ambas)">📐🧪 Matemática y Química (Ambas materias)</option>
+                    <option value="Otra materia de ciencias exactas">📚 Otra materia de ingreso</option>
+                  </select>
+                </div>
+
+                <!-- Sub-opción condicional: Nivel Académico (solo si elige Matemática, Física, Química o Informática) -->
+                <div id="academicLevelGroup" class="form-group" style="display: none;">
+                  <label for="contactLevel">Nivel Académico *</label>
+                  <select id="contactLevel" class="form-control" onchange="handleContactLevelChange()">
+                    <option value="Secundario" selected>🏫 Nivel Secundario</option>
+                    <option value="Universitario / CBC">🏛️ Nivel Universitario / CBC / Facultades</option>
+                    <option value="Terciario / Tecnicatura">🎓 Nivel Terciario / Carreras Técnicas</option>
+                    <option value="Primario / Adultos">📚 Primario / Adultos / Formación General</option>
+                  </select>
+                </div>
+
+                <!-- Sub-opción condicional: Año de Secundaria (solo si Nivel es Secundario) -->
+                <div id="secondaryGradeGroup" class="form-group" style="display: none;">
+                  <label for="contactGrade">Año de Secundaria *</label>
+                  <select id="contactGrade" class="form-control" onchange="generateContactAutoMessage()">
+                    <option value="1° año">1° año (Secundaria)</option>
+                    <option value="2° año">2° año (Secundaria)</option>
+                    <option value="3° año">3° año (Secundaria)</option>
+                    <option value="4° año" selected>4° año (Secundaria Superior)</option>
+                    <option value="5° año">5° año (Secundaria Superior)</option>
+                    <option value="6° año">6° año (Último año Secundaria)</option>
+                    <option value="7° año Técnica">7° año (Escuela Técnica)</option>
+                  </select>
+                </div>
+
+                <!-- Sub-opción condicional para Diseño Web -->
+                <div id="webTypeGroup" class="form-group" style="display: none;">
+                  <label for="contactWebType">Tipo de Proyecto Web *</label>
+                  <select id="contactWebType" class="form-control" onchange="handleWebTypeChange()">
+                    <option value="Landing Page" selected>📄 Landing Page Profesional (Página única)</option>
+                    <option value="Sitio Multipágina">🌐 Sitio Web Completo Multipágina</option>
+                    <option value="Sitio Educativo" disabled>📚 Sitio Educativo con Recursos (Próximamente / Por el momento no)</option>
+                    <option value="Tienda Online" disabled>🛒 Tienda Online / E-commerce (Próximamente / Por el momento no)</option>
+                    <option value="A medida" disabled>💡 Desarrollo avanzado a medida (Próximamente / Por el momento no)</option>
+                  </select>
+
+                  <!-- Opción Organización Sin Fines de Lucro -->
+                  <div style="margin-top: 0.85rem; padding: 0.75rem 0.95rem; background: #F8FAFC; border: 1.5px dashed #CBD5E1; border-radius: 8px;">
+                    <label style="display: flex; align-items: flex-start; gap: 0.55rem; cursor: pointer; font-size: 0.88rem; color: var(--text-dark); margin: 0; font-weight: 600;">
+                      <input type="checkbox" id="contactIsNgo" style="margin-top: 0.15rem; width: 17px; height: 17px; accent-color: #16A34A; cursor: pointer;" onchange="handleNgoToggle(this.checked)">
+                      <span>Pertenezco a una Organización Sin Fines de Lucro (ONG, Comedor, Asociación Civil, etc.)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Cartel de Beneficio Solidario para ONGs -->
+                <div id="ngoBenefitAlert" class="form-group" style="display: none;">
+                  <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: 10px; padding: 0.85rem 1.05rem; color: #166534; font-size: 0.88rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 0.65rem;">
+                      <span style="font-size: 1.4rem; line-height: 1;">🎁</span>
+                      <div>
+                        <strong style="color: #14532D; font-size: 0.95rem; display: block; margin-bottom: 0.2rem;">
+                          Iniciativa Solidaria: Armado de Landing Page 100% Bonificado
+                        </strong>
+                        <span style="display: block; line-height: 1.45; color: #166534;">
+                          El diseño, estructura y armado web de la Landing Page es <strong>totalmente gratuito</strong>. La entidad únicamente asume los costos directos de internet indispensables para su funcionamiento (registro oficial del dominio y servidor de alojamiento propio a nombre de la organización).
+                        </span>
+                        <span style="display: block; font-size: 0.82rem; margin-top: 0.35rem; color: #15803D; font-weight: 600;">
+                          * Válido para una (1) Landing Page institucional por entidad, previa verificación de personería jurídica o actividad comunitaria sin fines de lucro.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Aviso de Modalidad Virtual para Cursos de IA y Canva -->
+                <div id="courseInfoGroup" class="form-group" style="display: none;">
+                  <div style="background: #FDF4FF; border: 1.5px solid #F0ABFC; border-radius: 10px; padding: 0.75rem 1rem; color: #86198F; font-size: 0.9rem; display: flex; align-items: center; gap: 0.6rem;">
+                    <span style="font-size: 1.3rem;">💻</span>
+                    <div>
+                      <strong style="color: #701A75;">Modalidad 100% Virtual:</strong>
+                      <span style="display:block; font-size:0.85rem; color:#86198F; line-height: 1.35; margin-top: 0.15rem;">Clases en vivo online por Meet/Zoom con prácticas interactivas y material descargable.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Modalidad preferida (Materias: Presencial/Virtual/A coordinar • Web: Solo A coordinar) -->
+                <div id="classModalityGroup" class="form-group" style="display: none;">
+                  <label for="contactModality" id="contactModalityLabel">Modalidad preferida</label>
+                  <select id="contactModality" class="form-control" onchange="generateContactAutoMessage()">
+                    <option value="Presencial en Luján" selected>📍 Presencial en Luján (Centro)</option>
+                    <option value="Virtual / Online">💻 Virtual (Online en vivo con pizarra interactiva)</option>
+                    <option value="A coordinar">🤝 A coordinar (Presencial u Online)</option>
+                  </select>
+                </div>
+
+                <!-- Mensaje auto-generado -->
+                <div class="form-group">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                    <label for="contactMessage" style="margin:0;">Tu Mensaje *</label>
+                    <span style="font-size:0.75rem; color:#276E7B; font-weight:700; background:#EBF6F8; padding:0.18rem 0.55rem; border-radius:12px; border:1px solid #C4E6EC;">✨ Redactado automáticamente</span>
+                  </div>
+                  <textarea id="contactMessage" class="form-control" rows="4" placeholder="Elegí qué te gustaría consultar arriba y tu mensaje se redactará automáticamente..." required></textarea>
+                  <small style="display:block; font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem; line-height:1.4;">
+                    💡 Mensaje listo para enviar. Podés agregar algún detalle si querés o enviarlo tal como está.
+                  </small>
+                </div>
+
+                <!-- Aviso suave en Paso 2 si falta elegir opción -->
+                <div id="step2Notice" class="step-error-banner" style="display:none; margin-top: 0.9rem; margin-bottom: 0.2rem;" role="alert"></div>
+
+                <div class="form-actions-dual" style="display: flex; gap: 0.85rem; margin-top: 1.2rem;">
+                  <button type="button" class="btn btn-outline" style="flex: 1; justify-content: center; font-size: 0.95rem;" onclick="goToContactStep(1)">
+                    <span>← Modificar mis datos</span>
+                  </button>
+                  <button type="button" class="btn btn-primary btn-submit-form" style="flex: 1.8; justify-content: center; font-size: 1rem;" onclick="submitContactInquiry()">
+                    <span>✉️ Enviar Mensaje a Rosana</span>
+                  </button>
+                </div>
+
+              </div>
+
             </form>
+
           </div>
 
         </div>
@@ -220,137 +378,138 @@
     </section>
 
     <!-- ================= Ubicación de Clases Presenciales & Mapa ================= -->
-    <section class="section location-map-section section-alt" style="padding: 4.5rem 0;">
+    <section class="section location-map-section section-white" style="padding: 2.2rem 0 2.8rem;">
       <div class="container">
+        <!-- Encabezado de la Sección Ubicación (Segunda en jerarquía) -->
+        <div class="section-header text-center" style="margin-bottom: 1.8rem;">
+          <span class="section-tag" style="margin-bottom: 0.4rem;">Clases Presenciales</span>
+          <h2 class="section-title" style="font-size: 1.85rem; margin-bottom: 0.35rem; color: #276E7B;">
+            Ubicación en <span class="highlight-script">Luján Centro ♡</span>
+          </h2>
+          <p class="section-subtitle" style="font-size: 0.94rem; margin-bottom: 0;">
+            Espacio de estudio cómodo y céntrico, con fácil acceso y estacionamiento.
+          </p>
+        </div>
+
         <div class="map-card-wrapper">
-          <div class="map-card-info">
-            <span class="section-tag" style="margin-bottom: 0.5rem; display: inline-block;">Modalidad Presencial</span>
-            <h3 style="font-size: 1.55rem; color: var(--primary-purple-dark); font-weight: 800; margin-bottom: 0.6rem; line-height: 1.25;">
-              Zona de Referencia: Centro de Luján 📍
-            </h3>
-            <p style="color: var(--text-muted); font-size: 0.98rem; line-height: 1.6; margin-bottom: 1.2rem;">
-              Las clases presenciales se desarrollan en la zona del <strong>Centro de Luján (Provincia de Buenos Aires)</strong>, teniendo como puntos de referencia el área de la <strong>Basílica de Luján</strong>, el <strong>Cuartel de Bomberos Voluntarios</strong> y la <strong>Comisaría / Plaza Colón</strong>, en una ubicación de fácil acceso tanto en transporte público (colectivos y tren Sarmiento) como en vehículo particular.
-            </p>
-            <div style="background: #FAF7FC; border-left: 4px solid var(--primary-purple); padding: 0.95rem 1.15rem; border-radius: 8px; font-size: 0.9rem; color: var(--primary-purple-dark); line-height: 1.5; margin-bottom: 0.8rem;">
-              🤝 <strong>Coordinación previa indispensable:</strong> Por motivos de organización y privacidad, la dirección exacta y timbre se facilitan de manera personalizada una vez acordada la materia, día y horario de la clase mediante el formulario o WhatsApp.
-            </div>
-            <div style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
-              🌐 <em>¿No estás en Luján? Recordá que también podés tomar clases de Matemática, Física y Química en <strong>modalidad virtual en vivo</strong> para todo el país.</em>
-            </div>
-            <a href="https://www.google.com/maps/search/?api=1&query=Bas%C3%ADlica+de+Nuestra+Se%C3%B1ora+de+Luj%C3%A1n,+Luj%C3%A1n" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 0.4rem;">
-              <span>🗺️ Abrir mapa en Google Maps ↗</span>
-            </a>
-          </div>
+          <!-- MAPA DE UBICACIÓN (Compacto y proporcionado) -->
           <div class="map-frame-box">
             <iframe
-              src="https://www.google.com/maps?q=Bas%C3%ADlica+de+Nuestra+Se%C3%B1ora+de+Luj%C3%A1n,+San+Mart%C3%ADn,+Luj%C3%A1n,+Provincia+de+Buenos+Aires&amp;t=&amp;z=15&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
+              src="https://www.google.com/maps?q=Centro+de+Luj%C3%A1n,+Luj%C3%A1n,+Provincia+de+Buenos+Aires&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=&amp;output=embed"
               width="100%"
-              height="330"
+              height="270"
               style="border:0;"
               allowfullscreen=""
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
-              title="Zona de referencia de clases presenciales: Centro de Luján, Basílica y Cuartel de Bomberos">
+              title="Zona de referencia de clases presenciales: Centro de Luján">
             </iframe>
+          </div>
+
+          <!-- INFORMACIÓN VISUAL Y AMIGABLE (Mismo estilo que el formulario) -->
+          <div class="map-card-info">
+            <div>
+              <span class="section-tag" style="margin-bottom: 0.5rem; display: inline-block;">Punto de Encuentro</span>
+              <h3 class="contact-panel-title" style="font-size: 1.45rem; margin-top: 0; margin-bottom: 0.45rem; line-height: 1.25;">
+                Centro de Luján, Bs. As. 📍
+              </h3>
+              <p class="contact-panel-desc" style="font-size: 0.94rem; line-height: 1.55; margin-bottom: 1.15rem;">
+                Zona céntrica de fácil circulación. La dirección exacta se coordina al confirmar la clase.
+              </p>
+            </div>
+
+            <!-- Accesos y Medios de Transporte con estilo c-info-item unificado -->
+            <div class="contact-info-list" style="border-top: none; padding-top: 0; gap: 0.85rem; margin-bottom: 0;">
+              <div class="c-info-item">
+                <div class="c-icon">🚆</div>
+                <div>
+                  <strong>Tren Sarmiento:</strong>
+                  <span>A pocas cuadras de la estación Luján</span>
+                </div>
+              </div>
+
+              <div class="c-info-item">
+                <div class="c-icon">🚌</div>
+                <div>
+                  <strong>Colectivos:</strong>
+                  <span>Líneas locales e interurbanas con parada cercana</span>
+                </div>
+              </div>
+
+              <div class="c-info-item">
+                <div class="c-icon">🚗</div>
+                <div>
+                  <strong>En Vehículo:</strong>
+                  <span>Fácil circulación y estacionamiento en la zona</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ================= Preguntas Frecuentes (FAQ) ================= -->
-    <section class="section faq-section section-white" style="padding: 4.5rem 0;">
-      <div class="container">
-        <div class="section-header text-center" style="margin-bottom: 2.5rem;">
-          <span class="section-tag">Dudas Comunes</span>
-          <h2 class="section-title">Preguntas <span class="highlight-script">Frecuentes ♡</span></h2>
-          <p class="section-subtitle">Respuestas claras sobre clases particulares, modalidades, pagos y dinámica de trabajo.</p>
-          <div class="section-divider">
-            <span class="divider-line"></span>
-            <span class="divider-heart">♡</span>
-            <span class="divider-line"></span>
-          </div>
+    <!-- ================= Preguntas Frecuentes (FAQ - Bloque Secundario y Compacto en 2 Columnas) ================= -->
+    <section class="section faq-section section-white" style="padding: 1.8rem 0 2.5rem; border-top: 1px solid rgba(142, 68, 173, 0.08);">
+      <div class="container" style="max-width: 920px; margin: 0 auto;">
+        <!-- Encabezado sutil y secundario (sin robar protagonismo a la ubicación ni al formulario) -->
+        <div class="text-center" style="margin-bottom: 1.3rem;">
+          <span style="font-size: 0.78rem; font-weight: 750; color: #276E7B; text-transform: uppercase; letter-spacing: 0.06em; background: #E8F7F6; padding: 0.22rem 0.8rem; border-radius: 9999px; display: inline-block;">
+            Dudas Habituales
+          </span>
+          <h3 style="font-size: 1.3rem; color: #276E7B; font-weight: 800; margin-top: 0.45rem; margin-bottom: 0.2rem;">
+            Preguntas Frecuentes
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">
+            Respuestas rápidas para consultar antes de escribir.
+          </p>
         </div>
 
-        <div class="faq-accordion">
-          <details class="faq-item" open>
-            <summary class="faq-question">
-              <span>¿Con cuánta anticipación debo contactarte para preparar un examen?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>Lo ideal siempre es comenzar con varias semanas de anticipación para asimilar los conceptos con tranquilidad, ejercitar y corregir dudas. Sin embargo, también se brindan <strong>clases intensivas de repaso</strong> para exámenes cercanos según disponibilidad de horarios.</p>
-            </div>
-          </details>
+        <!-- Preguntas en 2 columnas: compactas y de poca altura -->
+        <div class="faq-grid-2cols">
+          <div class="faq-col">
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Qué diferencia hay entre una Landing Page y un Sitio Web?</span>
+                <span class="faq-toggle-icon">+</span>
+              </summary>
+              <div class="faq-answer">
+                <p>Una <strong>Landing Page</strong> es una página única directa pensada para presentar tu servicio o perfil profesional con llamado a la acción directo a WhatsApp. Un <strong>Sitio Web</strong> es una plataforma completa con varias páginas (Inicio, Sobre Mí, servicios, blog, etc.).</p>
+              </div>
+            </details>
 
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Cómo se abonan las clases y cuál es el valor?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>Las clases virtuales se abonan cómodamente por transferencia bancaria / billetera virtual (Mercado Pago, Cuenta DNI, etc.) y las clases presenciales en efectivo o transferencia. El valor de la hora de clase varía según el nivel académico (secundario o universitario). Consultame directamente al WhatsApp y te paso el detalle actualizado sin compromiso.</p>
-            </div>
-          </details>
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Cómo coordino las clases y con cuánta anticipación?</span>
+                <span class="faq-toggle-icon">+</span>
+              </summary>
+              <div class="faq-answer">
+                <p>Completá el formulario o escribime por WhatsApp indicando la materia y tu disponibilidad. Conviene comenzar con anticipación, aunque también brindo <strong>clases intensivas de repaso</strong> para exámenes cercanos.</p>
+              </div>
+            </details>
+          </div>
 
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Qué necesito para tomar clases de forma virtual?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>Solo necesitás una computadora, notebook o tablet con conexión a internet estable. Utilizamos pizarras digitales donde podés ver en tiempo real cada paso, fórmula y gráfico. Al finalizar la clase, te enviamos el PDF completo con todo lo desarrollado para que te quede guardado.</p>
-            </div>
-          </details>
+          <div class="faq-col">
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Cuáles son las modalidades de clase y medios de pago?</span>
+                <span class="faq-toggle-icon">+</span>
+              </summary>
+              <div class="faq-answer">
+                <p>Clases en <strong>modalidad presencial</strong> en Luján centro o <strong>virtual en vivo</strong> para todo el país por Meet con pizarra interactiva. Se abonan por transferencia bancaria (Mercado Pago, Cuenta DNI, bancos) o efectivo.</p>
+              </div>
+            </details>
 
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Puedo enviar mis guías y exámenes previos antes de la clase?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p><strong>¡Absolutamente sí!</strong> Es lo más recomendable. Al enviarme con antelación las fotos de tu guía de trabajos prácticos, programa oficial o modelos de parcial de tu cátedra, la clase se enfoca al 100% de manera específica en el estilo y criterio de corrección de tus docentes.</p>
-            </div>
-          </details>
-
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Los recursos didácticos y aplicaciones interactivas son gratuitos?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p><strong>Sí, totalmente gratuitos y de libre acceso.</strong> Las aplicaciones interactivas, simuladores, infografías pedagógicas y plantillas del Banco de Recursos son de uso libre para acompañar el estudio y la comprensión de las ciencias.</p>
-            </div>
-          </details>
-
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Qué temas se tratan en el Blog pedagógico?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>En el Blog comparto guías explicativas paso a paso, metodologías de estudio para materias de ciencias, novedades y videos complementarios con enlaces directos para mirar en YouTube o plataformas de streaming.</p>
-            </div>
-          </details>
-
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Cuánto tiempo demora el diseño y desarrollo de un sitio web?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>Depende de la envergadura del proyecto. Una <strong>Landing Page profesional</strong> suele estar lista y publicada en un plazo estimado de 7 a 14 días a partir de la entrega de contenidos e imágenes. Un <strong>sitio web multipágina o institucional</strong> puede llevar entre 2 y 4 semanas, siempre con entregas e iteraciones continuas.</p>
-            </div>
-          </details>
-
-          <details class="faq-item">
-            <summary class="faq-question">
-              <span>¿Qué necesito tener preparado para comenzar mi sitio web?</span>
-              <span class="faq-toggle-icon">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>Solo una idea clara de tu actividad o negocio y tus objetivos. En una primera conversación te guío paso a paso sobre qué textos, fotos o datos hacen falta. No te preocupes por la parte técnica: me encargo de todo el proceso de estructura, código, adaptabilidad y publicación.</p>
-            </div>
-          </details>
+            <details class="faq-item">
+              <summary class="faq-question">
+                <span>¿Qué necesito preparado para comenzar mi desarrollo web?</span>
+                <span class="faq-toggle-icon">+</span>
+              </summary>
+              <div class="faq-answer">
+                <p>Solo una idea de tu actividad. En una charla inicial te oriento sobre textos y fotos necesarios. De toda la estructura, diseño adaptado a celulares y publicación me encargo yo.</p>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
     </section>
@@ -486,18 +645,18 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;">
           <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem; text-align: left;">
             <label for="modalContactName" style="font-weight: 700; font-size: 0.88rem; color: var(--text-main, #2D253A);">Nombre *</label>
-            <input type="text" id="modalContactName" class="form-control" placeholder="Ej: Valentina" required style="width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid var(--primary-purple-border, #D8CEE2); border-radius: 8px; font-size: 0.95rem; font-family: inherit;">
+            <input type="text" id="modalContactName" class="form-control" placeholder="Ej: Valentina" autocomplete="given-name" required style="width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid var(--primary-purple-border, #D8CEE2); border-radius: 8px; font-size: 0.95rem; font-family: inherit;">
           </div>
           <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem; text-align: left;">
             <label for="modalContactSurname" style="font-weight: 700; font-size: 0.88rem; color: var(--text-main, #2D253A);">Apellido *</label>
-            <input type="text" id="modalContactSurname" class="form-control" placeholder="Ej: López" required style="width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid var(--primary-purple-border, #D8CEE2); border-radius: 8px; font-size: 0.95rem; font-family: inherit;">
+            <input type="text" id="modalContactSurname" class="form-control" placeholder="Ej: López" autocomplete="family-name" required style="width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid var(--primary-purple-border, #D8CEE2); border-radius: 8px; font-size: 0.95rem; font-family: inherit;">
           </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;">
           <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem; text-align: left;">
             <label for="modalContactReach" style="font-weight: 700; font-size: 0.88rem; color: var(--text-main, #2D253A);">Contacto (Email o Teléfono) *</label>
-            <input type="text" id="modalContactReach" class="form-control" placeholder="ej: tu@email.com o WhatsApp" required style="width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid var(--primary-purple-border, #D8CEE2); border-radius: 8px; font-size: 0.95rem; font-family: inherit;">
+            <input type="text" id="modalContactReach" class="form-control" placeholder="ej: tu@email.com o WhatsApp" autocomplete="email tel" required style="width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid var(--primary-purple-border, #D8CEE2); border-radius: 8px; font-size: 0.95rem; font-family: inherit;">
           </div>
           <div class="form-group" style="display: flex; flex-direction: column; gap: 0.3rem; text-align: left;">
             <label for="modalContactSubject" style="font-weight: 700; font-size: 0.88rem; color: var(--text-main, #2D253A);">Materia / Motivo *</label>
@@ -505,11 +664,12 @@
               <option value="Matemática">📐 Matemática (Secundario / Terciario / Univ.)</option>
               <option value="Física">⚛️ Física (Secundario / Terciario / Univ.)</option>
               <option value="Química">🧪 Química (Secundario / Terciario / Univ.)</option>
+              <option value="Informática">💻 Informática &amp; Herramientas Digitales</option>
               <option value="Ingreso Universitario">🎓 Ingreso Universitario / CBC / UTN</option>
-              <option value="Curso de Canva para Docentes y Empresas">🎨 Curso de Canva para Docentes & Empresas</option>
+              <option value="Curso de Canva para Docentes y Empresas">🎨 Curso de Canva para Docentes &amp; Empresas</option>
               <option value="Curso de IA para Educación">🤖 Curso de Inteligencia Artificial (IA) en Educación</option>
               <option value="Diseño Web Profesional">💻 Consulta por Diseño y Desarrollo Web</option>
-              <option value="Recursos Educativos">🎨 Banco de Recursos & Aplicaciones</option>
+              <option value="Recursos Educativos">🎨 Banco de Recursos &amp; Aplicaciones</option>
               <option value="Consulta General">💡 Otra consulta o propuesta pedagógica</option>
             </select>
           </div>
@@ -621,12 +781,6 @@
   </div>
 
   <aside class="floating-social-sidebar" aria-label="Canales TecnoEduca y contacto">
-    <a href="mailto:tecnoeduca81@gmail.com" class="floating-social-link fs-mail" aria-label="Correo TecnoEduca" title="Correo Oficial">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 12.713l-11.985-8.713h23.97l-11.985 8.713zm0 2.574l-12-8.725v13.438h24v-13.438l-12 8.725z"/>
-      </svg>
-      <span class="fs-tooltip">Correo Oficial</span>
-    </a>
     <a href="https://www.instagram.com/tecnoeduca.oficial" target="_blank" rel="noopener noreferrer" class="floating-social-link fs-ig" aria-label="Instagram TecnoEduca" title="Instagram @tecnoeduca.oficial">
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
@@ -675,6 +829,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
   <!-- Script Principal -->
-  <script src="script.js"></script>
+  <script src="script.js?v=20261120p"></script>
 </body>
 </html>
